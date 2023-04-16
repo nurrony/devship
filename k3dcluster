@@ -6,6 +6,7 @@
 CLUSTER_NAME=devship
 CLUSTER_DOMAIN=devship.localhost
 CLUSTER_API_PORT=6443
+CLUSTER_K3S_IMAGE_TAG=latest
 LB_HTTP_PORT=80
 LB_HTTPS_PORT=443
 READ_VALUE=
@@ -99,10 +100,12 @@ function configValues()
 {
   read_value "Cluster Name" "${CLUSTER_NAME}"
   CLUSTER_NAME=${READ_VALUE}
+  read_value "Cluster K3s Image Tag" "${CLUSTER_K3S_IMAGE_TAG}"
+  CLUSTER_K3S_IMAGE_TAG=${READ_VALUE}
   read_value "Cluster Domain" "${CLUSTER_DOMAIN}"
   CLUSTER_DOMAIN=${READ_VALUE}
-  read_value "API Port" "${API_PORT}"
-  API_PORT=${READ_VALUE}
+  read_value "API Port" "${CLUSTER_API_PORT}"
+  CLUSTER_API_PORT=${READ_VALUE}
   read_value "Servers (Masters)" "${SERVERS}"
   SERVERS=${READ_VALUE}
   read_value "Agents (Workers)" "${AGENTS}"
@@ -111,6 +114,7 @@ function configValues()
   LB_HTTP_PORT=${READ_VALUE}
   read_value "LoadBalancer HTTPS Port" "${LB_HTTPS_PORT}"
   LB_HTTPS_PORT=${READ_VALUE}
+  echo $CLUSTER_K3S_IMAGE_TAG
 }
 
 
@@ -120,3 +124,7 @@ function installCluster()
   # k3d cluster delete ${CLUSTER_NAME}
   footer
 }
+
+checkDependencies
+
+configValues
