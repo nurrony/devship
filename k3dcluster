@@ -35,11 +35,14 @@ function read_value()
 
 function header()
 {
-    echo "\n\n${BOLD_TXT}${1}${NORMAL_TXT}\n-------------------------------------"
+    echo
+    echo "-------------------------------------"
+    echo "${BOLD_TXT}${1}${NORMAL_TXT}"
 }
 
 function footer()
 {
+    echo
     echo "-------------------------------------"
 }
 
@@ -120,14 +123,92 @@ function configValues()
 }
 
 
-function installCluster()
+function generateClusterManifest()
 {
-  header "Deleting Previous Cluster"
-  # k3d cluster delete ${CLUSTER_NAME}
-  footer
+  header "Generate K3D cluster definition file"
+  # For more check: https://github.com/rancher/k3d/blob/main/tests/assets/config_test_simple.yaml
+cat > ./tmp-k3d-${CLUSTER_NAME}.yaml <<EOF
+apiVersion: k3d.io/v1alpha4
+kind: Simple
+metadata:
+  name: ${CLUSTER_NAME}
+servers: ${SERVERS}
+agents: ${AGENTS}
+kubeAPI:
+  hostIP: 0.0.0.0
+  hostPort: "${CLUSTER_API_PORT}"
+image: rancher/k3s:${CLUSTER_K3S_IMAGE_TAG}
+volumes:
+  - volume: ${CLUSTER_VOLUME_HOST_PATH}:/mnt/${CLUSTER_NAME}
+    nodeFilters:
+      - all
+ports:
+  - port: 0.0.0.0:${LB_HTTPS_PORT}:443
+    nodeFilters:
+      - loadbalancer
+  - port: 0.0.0.0:${LB_HTTP_PORT}:80
+    nodeFilters:
+      - loadbalancer
+registries:
+  create:
+    name: registry.devship.localhost
+    host: "0.0.0.0"
+    hostPort: "5000"
+    volumes:
+      - /Volumes/Devzone/storage/kubernetes/clusters/registry:/var/lib/registry
+options:
+  k3d:
+    wait: true
+    timeout: 30s
+    disableLoadbalancer: false
+    disableImageVolume: false
+    disableRollback: false
+    # loadbalancer:
+    #   configOverrides:
+    #     - settings.workerConnections=2048
+  k3s: # options passed on to K3s itself
+    extraArgs:
+      - arg: "--tls-san=*.devship.localhost"
+        nodeFilters:
+          - server:*
+      - arg: "--tls-san=127.0.0.1"
+        nodeFilters:
+          - server:*
+      - arg: "--disable=traefik" # disable traefik
+        nodeFilters:
+          - server:*
+    nodeLabels:
+      - label: "CreatedBy=Rony"
+        nodeFilters:
+          - server:*
+  kubeconfig:
+    updateDefaultKubeconfig: true
+    switchCurrentContext: true
+  runtime: # runtime (docker) specific options
+    gpuRequest: ""
+    serversMemory: ""
+    agentsMemory: ""
+    labels:
+      - label: CreatedBy=Rony
+        nodeFilters:
+          - server:*
+          - agent:*
+          - loadbalancer
+
+EOF
+cat <<-EOF
+
+Please check ${BOLD_TXT}./tmp-k3d-${CLUSTER_NAME}.yaml${NORMAL_TXT} for customizing your cluster.
+For more please check https://github.com/rancher/k3d/blob/main/tests/assets/config_test_simple.yaml
+
+EOF
+read -n 1 -s -r -p "Press any key to continue..."
+footer
 
 }
 
 checkDependencies
 
 configValues
+
+generateClusterManifest
