@@ -127,7 +127,7 @@ function generateClusterManifest()
 {
   header "Generate K3D cluster definition file"
   # For more check: https://github.com/rancher/k3d/blob/main/tests/assets/config_test_simple.yaml
-cat > ./tmp-k3d-${CLUSTER_NAME}.yaml <<EOF
+cat > ./k3d-${CLUSTER_NAME}.tmp.yaml <<EOF
 apiVersion: k3d.io/v1alpha4
 kind: Simple
 metadata:
@@ -196,13 +196,13 @@ options:
           - loadbalancer
 
 EOF
-cat <<-EOF
+cat <<EOF
 
-Please check ${BOLD_TXT}./tmp-k3d-${CLUSTER_NAME}.yaml${NORMAL_TXT} for customizing your cluster.
+Please check ${BOLD_TXT}./k3d-${CLUSTER_NAME}.tmp.yaml${NORMAL_TXT} for customizing your cluster.
 For more please check https://github.com/rancher/k3d/blob/main/tests/assets/config_test_simple.yaml
 
 EOF
-read -n 1 -s -r -p "Press any key to continue..."
+read -n 1 -srp "Press any key to continue..."
 footer
 
 }
