@@ -274,12 +274,32 @@ function buildCluster()
   footer
 
   provisionPersistentVolume
-
 }
 
 function provisionPersistentVolume()
 {
-   # todo
+   header "Provisioning Persistent Volume"
+   cat <<EOF | kubectl apply -f -
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: ${CLUSTER_NAME}-pv
+  labels:
+    type: local
+
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: manual
+  hostPath:
+    path: /mnt/devship
+EOF
+  sleep 2
+  kubectl describe pv ${CLUSTER_NAME}-pv
+  footer
 }
 
 checkDependencies
