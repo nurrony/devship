@@ -11,6 +11,17 @@ This repository contains my local Kubernetes dev environment powered by [k3d fro
 
 > ℹ️ **The script will install necessary missing softwares**
 
+## Features
+ - Kubernetes cluster with multi Control Plane (Server) and multi Agents (Workers)
+ - Host directory mounted as `PersistentVolume`
+ - Local Registry **[Optional]**
+ - Ingress Nginx with custom certificates **[Optional]**
+
+ More coming soon...
+
+## Sail your K8s Devship
+
+// TBD
 
 [k3d-site]: https://k3d.io
 [helm-site]: https://helm.sh/docs/intro/install/
