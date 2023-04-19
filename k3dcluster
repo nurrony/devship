@@ -59,7 +59,6 @@ function header()
     echo
     echo "==> ${BOLD_TXT}${1}${NORMAL_TXT}"
     echo
-    # echo "-------------------------------------"
 }
 
 function footer()
@@ -269,6 +268,9 @@ function buildCluster()
 
   header "Waiting for cluster init"
   sleep 5
+  kubectl config use-context k3d-${CLUSTER_NAME}
+  kubectl cluster-info
+  footer
 
   provisionPersistentVolume
 
