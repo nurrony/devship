@@ -23,9 +23,9 @@ INSTALL_PROMETHEUS=No
 
 LOCAL_REGISTRY_HOST="0.0.0.0"
 LOCAL_REGISTRY_NAME="registry.${CLUSTER_DOMAIN}"
-LOCAL_REGISTRY_PORT="5000"
+LOCAL_REGISTRY_PORT=5000
 LOCAL_REGISTRY_MANIFEST=""
-LOCAL_REGISTRY_VOL_HOSTPATH="${HOME}/${CLUSTER_NAME}-registry"
+LOCAL_REGISTRY_VOL_HOSTPATH=${HOME}/${CLUSTER_NAME}-registry
 
 # Text Variables
 BOLD_TXT=$(tput bold)
@@ -57,14 +57,16 @@ function read_value()
 function header()
 {
     echo
-    echo "-------------------------------------"
-    echo "${BOLD_TXT}${1}${NORMAL_TXT}"
+    echo "==> ${BOLD_TXT}${1}${NORMAL_TXT}"
+    echo
+    # echo "-------------------------------------"
 }
 
 function footer()
 {
+    # echo
+    # echo "-------------------------------------"
     echo
-    echo "-------------------------------------"
 }
 
 
@@ -158,7 +160,8 @@ function configValues()
   fi
 }
 
-function generateClusterRegistryManifest() {
+function generateClusterRegistryManifest()
+{
   read_value "Local registry name" "${LOCAL_REGISTRY_NAME}"
   LOCAL_REGISTRY_NAME=${READ_VALUE}
 
@@ -212,10 +215,7 @@ options:
     disableLoadbalancer: false
     disableImageVolume: false
     disableRollback: false
-    # loadbalancer:
-    #   configOverrides:
-    #     - settings.workerConnections=2048
-  k3s: # options passed on to K3s itself
+  k3s:
     extraArgs:
       - arg: "--tls-san=*.devship.localhost"
         nodeFilters:
@@ -244,17 +244,39 @@ options:
           - agent:*
           - loadbalancer
 $LOCAL_REGISTRY_MANIFEST
-
 EOF
 cat <<EOF
-
 Please check ${BOLD_TXT}./k3d-${CLUSTER_NAME}.tmp.yaml${NORMAL_TXT} for customizing your cluster.
 For more please check https://github.com/rancher/k3d/blob/main/tests/assets/config_test_simple.yaml
 
+==> ${BOLD_TXT}It will delete any existing cluster named k3d-${CLUSTER_NAME}${NORMAL_TXT} <==
+
 EOF
-read -n 1 -srp "Press any key to continue..."
+read -n 1 -srp "Press any key to continue... "
 footer
 
+}
+
+function buildCluster()
+{
+  header "Deleting Previous Cluster"
+  k3d cluster delete ${CLUSTER_NAME}
+  footer
+
+  header "Building ${CLUSTER_NAME}"
+  k3d cluster create --config k3d-${CLUSTER_NAME}.tmp.yaml
+  footer
+
+  header "Waiting for cluster init"
+  sleep 5
+
+  provisionPersistentVolume
+
+}
+
+function provisionPersistentVolume()
+{
+   # todo
 }
 
 checkDependencies
@@ -262,3 +284,5 @@ checkDependencies
 configValues
 
 generateClusterManifest
+
+buildCluster
