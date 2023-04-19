@@ -264,7 +264,7 @@ function buildCluster()
 
   mkdir -p ${CLUSTER_VOLUME_HOST_PATH} ${LOCAL_REGISTRY_VOL_HOSTPATH}
   header "Building ${CLUSTER_NAME}"
-  k3d cluster create --config k3d-${CLUSTER_NAME}.tmp.yaml
+  k3d cluster create --config ./k3d-${CLUSTER_NAME}.tmp.yaml
   footer
 
   header "Waiting for cluster init"
@@ -272,7 +272,7 @@ function buildCluster()
   kubectl config use-context k3d-${CLUSTER_NAME}
   kubectl cluster-info
   footer
-
+  rm -f ./k3d-${CLUSTER_NAME}.tmp.yaml
   provisionPersistentVolume
 }
 
@@ -301,6 +301,37 @@ EOF
   kubectl describe pv ${CLUSTER_NAME}-pv
   footer
 }
+
+installIngress ()
+{
+  header "Instaling Nginx Ingress Controller"
+  # Create Namespace
+  kubectl create namespace ingress
+  # Create a secret with server certificate
+  kubectl --namespace ingress create secret tls nginx-server-certs --key certs/devship.localhost-key.pem --cert certs/devship.localhost.pem
+  # Install ingress with tls enabled providing certificates stored in namespace
+  cat <<EOF | helm install --namespace ingress -f - ingress bitnami/nginx-ingress-controller
+extraArgs:
+  default-ssl-certificate: "ingress/nginx-server-certs"
+EOF
+  footer
+  sleep 5
+  header "LoadBalancer Details"
+  kubectl --namespace ingress get svc | egrep -e NAME -e LoadBalancer
+  footer
+  #kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/provider/cloud/deploy.yaml
+}
+
+
+function installAddons()
+{
+    read_value "Install Ingress? ${yes_no}" "${INSTALL_INGRESS}"
+    if [ $(isSelected ${READ_VALUE}) -eq 1 ];
+    then
+        installIngress
+    fi
+}
+
 
 checkDependencies
 
