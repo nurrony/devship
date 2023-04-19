@@ -45,7 +45,7 @@ function isSelected()
 
 
 # $1 text to show - $2 default value
-function read_value()
+function prompt()
 {
     read -p "${1} [${BOLD_TXT}${2}${NORMAL_TXT}]: " READ_VALUE
     if [ "${READ_VALUE}" = "" ]
@@ -124,34 +124,34 @@ function checkDependencies()
 
 function configValues()
 {
-  read_value "Cluster Name" "${CLUSTER_NAME}"
+  prompt "Cluster Name" "${CLUSTER_NAME}"
   CLUSTER_NAME=${READ_VALUE}
 
-  read_value "Cluster K3s Image Tag" "${CLUSTER_K3S_IMAGE_TAG}"
+  prompt "Cluster K3s Image Tag" "${CLUSTER_K3S_IMAGE_TAG}"
   CLUSTER_K3S_IMAGE_TAG=${READ_VALUE}
 
-  read_value "Cluster Domain" "${CLUSTER_DOMAIN}"
+  prompt "Cluster Domain" "${CLUSTER_DOMAIN}"
   CLUSTER_DOMAIN=${READ_VALUE}
 
-  read_value "API Port" "${CLUSTER_API_PORT}"
+  prompt "API Port" "${CLUSTER_API_PORT}"
   CLUSTER_API_PORT=${READ_VALUE}
 
-  read_value "Servers (Masters)" "${SERVERS}"
+  prompt "Servers (Masters)" "${SERVERS}"
   SERVERS=${READ_VALUE}
 
-  read_value "Agents (Workers)" "${AGENTS}"
+  prompt "Agents (Workers)" "${AGENTS}"
   AGENTS=${READ_VALUE}
 
-  read_value "LoadBalancer HTTP Port" "${LB_HTTP_PORT}"
+  prompt "LoadBalancer HTTP Port" "${LB_HTTP_PORT}"
   LB_HTTP_PORT=${READ_VALUE}
 
-  read_value "LoadBalancer HTTPS Port" "${LB_HTTPS_PORT}"
+  prompt "LoadBalancer HTTPS Port" "${LB_HTTPS_PORT}"
   LB_HTTPS_PORT=${READ_VALUE}
 
-  read_value "Host path to mount into cluster" "${CLUSTER_VOLUME_HOST_PATH}"
+  prompt "Host path to mount into cluster" "${CLUSTER_VOLUME_HOST_PATH}"
   CLUSTER_VOLUME_HOST_PATH=${READ_VALUE}
 
-  read_value "Install local image registry? ${YES_NO}" ${INSTALL_LOCAL_REGISTRY}
+  prompt "Install local image registry? ${YES_NO}" ${INSTALL_LOCAL_REGISTRY}
   INSTALL_LOCAL_REGISTRY=${READ_VALUE}
   if [ $(isSelected ${READ_VALUE}) -eq 1 ];
   then
@@ -161,13 +161,13 @@ function configValues()
 
 function generateClusterRegistryManifest()
 {
-  read_value "Local registry name" "${LOCAL_REGISTRY_NAME}"
+  prompt "Local registry name" "${LOCAL_REGISTRY_NAME}"
   LOCAL_REGISTRY_NAME=${READ_VALUE}
 
-  read_value "Local registry host" "${LOCAL_REGISTRY_HOST}"
+  prompt "Local registry host" "${LOCAL_REGISTRY_HOST}"
   LOCAL_REGISTRY_HOST=${READ_VALUE}
 
-  read_value "Host path to for local registry" "${LOCAL_REGISTRY_VOL_HOSTPATH}"
+  prompt "Host path to for local registry" "${LOCAL_REGISTRY_VOL_HOSTPATH}"
   LOCAL_REGISTRY_VOL_HOSTPATH=${READ_VALUE}
 
   LOCAL_REGISTRY_MANIFEST="
@@ -330,7 +330,7 @@ EOF
 function installAddons()
 {
     header "Installing Adons"
-    read_value "Install Ingress? ${yes_no}" "${INSTALL_INGRESS}"
+    prompt "Install Ingress? ${yes_no}" "${INSTALL_INGRESS}"
     if [ $(isSelected ${READ_VALUE}) -eq 1 ];
     then
         installIngress
