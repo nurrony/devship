@@ -305,6 +305,11 @@ EOF
 installIngress ()
 {
   header "Instaling Nginx Ingress Controller"
+
+  helm repo update
+  helm repo add bitnami https://charts.bitnami.com/bitnami
+  helm repo update
+
   # Create Namespace
   kubectl create namespace ingress
   # Create a secret with server certificate
@@ -319,17 +324,19 @@ EOF
   header "LoadBalancer Details"
   kubectl --namespace ingress get svc | egrep -e NAME -e LoadBalancer
   footer
-  #kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/provider/cloud/deploy.yaml
 }
 
 
 function installAddons()
 {
+    header "Installing Adons"
     read_value "Install Ingress? ${yes_no}" "${INSTALL_INGRESS}"
     if [ $(isSelected ${READ_VALUE}) -eq 1 ];
     then
         installIngress
     fi
+
+
 }
 
 
@@ -340,3 +347,5 @@ configValues
 generateClusterManifest
 
 buildCluster
+
+installAddons
