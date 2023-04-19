@@ -63,8 +63,6 @@ function header()
 
 function footer()
 {
-    # echo
-    # echo "-------------------------------------"
     echo
 }
 
