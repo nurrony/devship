@@ -175,15 +175,15 @@ registries:
     host: \"${LOCAL_REGISTRY_HOST}\"
     hostPort: \"${LOCAL_REGISTRY_PORT}\"
     volumes:
-      - ${LOCAL_REGISTRY_VOL_HOSTPATH}:/var/lib/registry"
+      - ${LOCAL_REGISTRY_VOL_HOSTPATH}:/var/lib/registry
   config: |
     mirrors:
       docker.io:
         endpoint:
-          - http://host.k3d.internal:5000
-      host.k3d.internal:5000:
+          - http://${LOCAL_REGISTRY_NAME}:5000
+      \"${LOCAL_REGISTRY_NAME}:5000\":
         endpoint:
-          - http://host.k3d.internal:5000
+          - http://${LOCAL_REGISTRY_NAME}:5000"
 }
 
 
