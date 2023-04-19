@@ -178,3 +178,6 @@ $RECYCLE.BIN/
 # k3d-devship
 *.tmp.yaml
 *.tmp.yml
+
+certs/*
+!certs/.gitkeep
