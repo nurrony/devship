@@ -262,6 +262,7 @@ function buildCluster()
   k3d cluster delete ${CLUSTER_NAME}
   footer
 
+  mkdir -p ${CLUSTER_VOLUME_HOST_PATH} ${LOCAL_REGISTRY_VOL_HOSTPATH}
   header "Building ${CLUSTER_NAME}"
   k3d cluster create --config k3d-${CLUSTER_NAME}.tmp.yaml
   footer
