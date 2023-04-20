@@ -1,9 +1,12 @@
 #!/usr/bin/env bash
 set -e
 
+
+
 #----------------------------------------------
 # Configuration variables with default value
 #----------------------------------------------
+USER_SHELL_NAME="$(echo $SHELL | cut -d \/ -f 3)"
 CLUSTER_NAME=devship
 CLUSTER_DOMAIN=devship.localhost
 CLUSTER_API_PORT=6443
@@ -95,7 +98,7 @@ function checkDependencies()
         header "K3D is required. Installing it ..."
         curl -s https://raw.githubusercontent.com/rancher/k3d/main/install.sh | bash
         # Install k3d autocompletion for bash
-        echo "source <(k3d completion bash)" >> ~/.bashrc
+        echo "source <(k3d completion $USER_SHELL_NAME)" >> ~/".${USER_SHELL_NAME}rc"
         footer
         #exit
     fi
@@ -107,6 +110,7 @@ function checkDependencies()
         chmod +x ./kubectl
         sudo mv ./kubectl /usr/local/bin/kubectl
         kubectl version --client --output yaml
+        echo "source <(kubectl completion $USER_SHELL_NAME)" >> ~/".${USER_SHELL_NAME}rc"
         footer
         #exit
     fi
@@ -117,6 +121,7 @@ function checkDependencies()
         curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3
         chmod +x ./get_helm.sh
         ./get_helm.sh
+        echo "source <(helm completion $USER_SHELL_NAME)" >> ~/".${USER_SHELL_NAME}rc"
 
         # Add default repos
         helm repo add stable https://charts.helm.sh/stable
