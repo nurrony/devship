@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 set -e
 
-#------------------------------------
-#    Variables with default value
-#------------------------------------
+#----------------------------------------------
+# Configuration variables with default value
+#----------------------------------------------
 CLUSTER_NAME=devship
 CLUSTER_DOMAIN=devship.localhost
 CLUSTER_API_PORT=6443
@@ -11,17 +11,18 @@ CLUSTER_K3S_IMAGE_TAG=latest
 CLUSTER_VOLUME_HOST_PATH=${HOME}/${CLUSTER_NAME}
 LB_HTTP_PORT=80
 LB_HTTPS_PORT=443
-READ_VALUE=
+USER_INPUT=
 SERVERS=1
 AGENTS=1
 
+# Addons
 TRAEFIK_V2=No
 INSTALL_LOCAL_REGISTRY=Yes
 INSTALL_INGRESS=Yes
 INSTALL_DASHBOARD=No
 INSTALL_PROMETHEUS=No
 
-
+# Local Registry
 LOCAL_REGISTRY_HOST="0.0.0.0"
 LOCAL_REGISTRY_NAME="registry.${CLUSTER_DOMAIN}"
 LOCAL_REGISTRY_PORT=5000
@@ -57,10 +58,10 @@ function isSelected()
 # $1 text to show - $2 default value
 function prompt()
 {
-    read -p "${GREEN}${1}${NOCOLOR} ${WHITE}[${NOCOLOR}${BOLD_TXT}${WHITE}${2}${NOCOLOR}${NORMAL_TXT}${WHITE}]:${NOCOLOR} " READ_VALUE
-    if [ "${READ_VALUE}" = "" ]
+    read -p "${GREEN}${1}${NOCOLOR} ${WHITE}[${NOCOLOR}${BOLD_TXT}${WHITE}${2}${NOCOLOR}${NORMAL_TXT}${WHITE}]:${NOCOLOR} " USER_INPUT
+    if [ "${USER_INPUT}" = "" ]
     then
-        READ_VALUE=$2
+        USER_INPUT=$2
     fi
 }
 
@@ -133,36 +134,36 @@ function configValues()
 {
   echo
   prompt "Cluster Name" "${CLUSTER_NAME}"
-  CLUSTER_NAME=${READ_VALUE}
+  CLUSTER_NAME=${USER_INPUT}
 
   prompt "Cluster K3s Image Tag" "${CLUSTER_K3S_IMAGE_TAG}"
-  CLUSTER_K3S_IMAGE_TAG=${READ_VALUE}
+  CLUSTER_K3S_IMAGE_TAG=${USER_INPUT}
 
   prompt "Cluster Domain" "${CLUSTER_DOMAIN}"
-  CLUSTER_DOMAIN=${READ_VALUE}
+  CLUSTER_DOMAIN=${USER_INPUT}
 
   prompt "API Port" "${CLUSTER_API_PORT}"
-  CLUSTER_API_PORT=${READ_VALUE}
+  CLUSTER_API_PORT=${USER_INPUT}
 
   prompt "Servers (Masters)" "${SERVERS}"
-  SERVERS=${READ_VALUE}
+  SERVERS=${USER_INPUT}
 
   prompt "Agents (Workers)" "${AGENTS}"
-  AGENTS=${READ_VALUE}
+  AGENTS=${USER_INPUT}
 
   prompt "LoadBalancer HTTP Port" "${LB_HTTP_PORT}"
-  LB_HTTP_PORT=${READ_VALUE}
+  LB_HTTP_PORT=${USER_INPUT}
 
   prompt "LoadBalancer HTTPS Port" "${LB_HTTPS_PORT}"
-  LB_HTTPS_PORT=${READ_VALUE}
+  LB_HTTPS_PORT=${USER_INPUT}
 
   prompt "Host path to mount into cluster" "${CLUSTER_VOLUME_HOST_PATH}"
-  CLUSTER_VOLUME_HOST_PATH=${READ_VALUE}
+  CLUSTER_VOLUME_HOST_PATH=${USER_INPUT}
 
   prompt "Install local image registry?" ${INSTALL_LOCAL_REGISTRY}
-  INSTALL_LOCAL_REGISTRY=${READ_VALUE}
+  INSTALL_LOCAL_REGISTRY=${USER_INPUT}
 
-  if [ $(isSelected ${READ_VALUE}) -eq 1 ];
+  if [ $(isSelected ${USER_INPUT}) -eq 1 ];
   then
     generateClusterRegistryManifest
   fi
@@ -171,13 +172,13 @@ function configValues()
 function generateClusterRegistryManifest()
 {
   prompt "Local registry name" "${LOCAL_REGISTRY_NAME}"
-  LOCAL_REGISTRY_NAME=${READ_VALUE}
+  LOCAL_REGISTRY_NAME=${USER_INPUT}
 
   prompt "Local registry host" "${LOCAL_REGISTRY_HOST}"
-  LOCAL_REGISTRY_HOST=${READ_VALUE}
+  LOCAL_REGISTRY_HOST=${USER_INPUT}
 
   prompt "Host path to for local registry" "${LOCAL_REGISTRY_VOL_HOSTPATH}"
-  LOCAL_REGISTRY_VOL_HOSTPATH=${READ_VALUE}
+  LOCAL_REGISTRY_VOL_HOSTPATH=${USER_INPUT}
 
   LOCAL_REGISTRY_MANIFEST="
 registries:
@@ -352,8 +353,7 @@ function installAddons()
 {
     header "Installing Adons"
     prompt "Install Ingress?" "${INSTALL_INGRESS}"
-    if [ $(isSelected ${READ_VALUE}) -eq 1 ];
-    then
+    if [ $(isSelected ${USER_INPUT}) -eq 1 ]; then
         installIngress
     fi
 
