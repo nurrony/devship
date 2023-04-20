@@ -161,6 +161,7 @@ function configValues()
 
   prompt "Install local image registry?" ${INSTALL_LOCAL_REGISTRY}
   INSTALL_LOCAL_REGISTRY=${READ_VALUE}
+
   if [ $(isSelected ${READ_VALUE}) -eq 1 ];
   then
     generateClusterRegistryManifest
