@@ -280,6 +280,7 @@ function buildCluster()
   kubectl cluster-info
   footer
   rm -f ./k3d-${CLUSTER_NAME}.tmp.yaml
+
   provisionPersistentVolume
 }
 
