@@ -28,15 +28,24 @@ LOCAL_REGISTRY_PORT=5000
 LOCAL_REGISTRY_MANIFEST=""
 LOCAL_REGISTRY_VOL_HOSTPATH=${HOME}/${CLUSTER_NAME}-registry
 
-# Text Variables
+# Typography
 BOLD_TXT=$(tput bold)
 NORMAL_TXT=$(tput sgr0)
-YES_NO="(${BOLD_TXT}Y${NORMAL_TXT}es/${BOLD_TXT}N${NORMAL_TXT}o)"
+YES_NO="${WHITE}(${NOCOLOR}${WHITE}${BOLD_TXT}Y${NORMAL_TXT}${NOCOLOR}es/${BOLD_TXT}N${NORMAL_TXT}o)"
 
+# Colors
+RED=$(tput setaf 1)
+GREEN=$(tput setaf 2)
+YELLOW=$(tput setaf 3)
+BLUE=$(tput setaf 4)
+PINK=$(tput setaf 5)
+CYAN=$(tput setaf 6)
+WHITE=$(tput setaf 7)
+NOCOLOR=$(tput sgr0)
 
 function isSelected()
 {
-  if [ "${1}" = "Yes" ] || [ "${1}" = "yes" ] || [ "${1}" = "Y" ]  || [ "${1}" = "y" ];
+  if [ "${1}" = "Yes" ] || [ "${1}" = "yes" ] || [ "${1}" = "Y" ] || [ "${1}" = "y" ];
   then
     echo 1
   else
@@ -48,7 +57,7 @@ function isSelected()
 # $1 text to show - $2 default value
 function prompt()
 {
-    read -p "${1} [${BOLD_TXT}${2}${NORMAL_TXT}]: " READ_VALUE
+    read -p "${GREEN}${1}${NOCOLOR} ${WHITE}[${NOCOLOR}${BOLD_TXT}${WHITE}${2}${NOCOLOR}${NORMAL_TXT}${WHITE}]:${NOCOLOR} " READ_VALUE
     if [ "${READ_VALUE}" = "" ]
     then
         READ_VALUE=$2
@@ -57,8 +66,7 @@ function prompt()
 
 function header()
 {
-    echo
-    echo "==> ${BOLD_TXT}${1}${NORMAL_TXT}"
+    echo -e "${GREEN}==> ${BOLD_TXT}${1}${NORMAL_TXT}${NOCOLOR}"
     echo
 }
 
@@ -123,6 +131,7 @@ function checkDependencies()
 
 function configValues()
 {
+  echo
   prompt "Cluster Name" "${CLUSTER_NAME}"
   CLUSTER_NAME=${READ_VALUE}
 
@@ -150,7 +159,7 @@ function configValues()
   prompt "Host path to mount into cluster" "${CLUSTER_VOLUME_HOST_PATH}"
   CLUSTER_VOLUME_HOST_PATH=${READ_VALUE}
 
-  prompt "Install local image registry? ${YES_NO}" ${INSTALL_LOCAL_REGISTRY}
+  prompt "Install local image registry?" ${INSTALL_LOCAL_REGISTRY}
   INSTALL_LOCAL_REGISTRY=${READ_VALUE}
   if [ $(isSelected ${READ_VALUE}) -eq 1 ];
   then
@@ -190,7 +199,7 @@ registries:
 
 function generateClusterManifest()
 {
-  header "Generate K3D cluster definition file"
+  header "Generating K3D cluster definition file"
   # For more check: https://github.com/rancher/k3d/blob/main/tests/assets/config_test_simple.yaml
 cat > ./k3d-${CLUSTER_NAME}.tmp.yaml <<EOF
 apiVersion: k3d.io/v1alpha4
@@ -252,13 +261,14 @@ options:
 $LOCAL_REGISTRY_MANIFEST
 EOF
 cat <<EOF
-Please check ${BOLD_TXT}./k3d-${CLUSTER_NAME}.tmp.yaml${NORMAL_TXT} for customizing your cluster.
-For more please check https://github.com/rancher/k3d/blob/main/tests/assets/config_test_simple.yaml
+${GREEN}Please check ${BLUE}${BOLD_TXT}./k3d-${CLUSTER_NAME}.tmp.yaml${NORMAL_TXT}${NOCOLOR} ${GREEN}for customizing your cluster.
+For more please check ${BLUE}https://github.com/rancher/k3d/blob/main/tests/assets/config_test_simple.yaml${NOCOLOR}
 
-==> ${BOLD_TXT}It will delete any existing cluster named k3d-${CLUSTER_NAME}${NORMAL_TXT} <==
+${GREEN}==> ${RED}${BOLD_TXT}It will DELETE any existing cluster named k3d-${CLUSTER_NAME}${NORMAL_TXT}${NOCOLOR} ${GREEN}<==${NOCOLOR}
 
 EOF
-read -n 1 -srp "Press any key to continue... "
+read -n 1 -srp "${BLUE}Press any key to continue...${NOCOLOR}"
+echo
 footer
 
 }
@@ -271,7 +281,9 @@ function buildCluster()
 
   mkdir -p ${CLUSTER_VOLUME_HOST_PATH} ${LOCAL_REGISTRY_VOL_HOSTPATH}
   header "Building ${CLUSTER_NAME}"
+  echo -e "${CYAN}"
   k3d cluster create --config ./k3d-${CLUSTER_NAME}.tmp.yaml
+  echo -e "${NOCOLOR}"
   footer
 
   header "Waiting for cluster init"
@@ -338,7 +350,7 @@ EOF
 function installAddons()
 {
     header "Installing Adons"
-    prompt "Install Ingress? ${yes_no}" "${INSTALL_INGRESS}"
+    prompt "Install Ingress?" "${INSTALL_INGRESS}"
     if [ $(isSelected ${READ_VALUE}) -eq 1 ];
     then
         installIngress

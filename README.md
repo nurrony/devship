@@ -19,12 +19,16 @@ This repository contains my local Kubernetes dev environment powered by [k3d fro
 
  More coming soon...
 
-## Sail your K8s Devship
+## Generate certificates and HostMapping
+While creating cluster the script search for `{CLUSTER_DOMAIN}-key.pem` and `{CLUSTER_DOMAIN}.pem` as key and certificate file during setting up `tls` secret for `Nginx Ingress Controller`. You need to create SSL key and certificate for your domain and put it into certs directory following the naming pattern.
 
-
+## Start Voyage on Kubernetes Devship
+Run the following command to start the voyage
 
 ```
-tbd
+./k3dcluster
+
+
 ```
 
 [k3d-site]: https://k3d.io
