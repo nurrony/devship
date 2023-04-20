@@ -9,6 +9,7 @@ CLUSTER_DOMAIN=devship.localhost
 CLUSTER_API_PORT=6443
 CLUSTER_K3S_IMAGE_TAG=latest
 CLUSTER_VOLUME_HOST_PATH=${HOME}/${CLUSTER_NAME}
+CLUSTER_PV_SIZE=20
 LB_HTTP_PORT=80
 LB_HTTPS_PORT=443
 USER_INPUT=
@@ -32,7 +33,7 @@ LOCAL_REGISTRY_VOL_HOSTPATH=${HOME}/${CLUSTER_NAME}-registry
 # Typography
 BOLD_TXT=$(tput bold)
 NORMAL_TXT=$(tput sgr0)
-YES_NO="${WHITE}(${NOCOLOR}${WHITE}${BOLD_TXT}Y${NORMAL_TXT}${NOCOLOR}es/${BOLD_TXT}N${NORMAL_TXT}o)"
+YES_NO="(Yes/No)"
 
 # Colors
 RED=$(tput setaf 1)
@@ -53,7 +54,6 @@ function isSelected()
     echo 0
   fi
 }
-
 
 # $1 text to show - $2 default value
 function prompt()
@@ -82,7 +82,7 @@ function checkDependencies()
 {
     # Check Docker
     if ! type docker > /dev/null; then
-        echo "Docker could not be found. Installing it ..."
+        echo "Docker is required. Installing it ..."
         curl -L -o ./install-docker.sh "https://get.docker.com"
         chmod +x ./install-docker.sh
         ./install-docker.sh
@@ -92,26 +92,28 @@ function checkDependencies()
 
     # Check K3D
     if ! type k3d > /dev/null; then
-        echo "K3D could not be found. Installing it ..."
+        header "K3D is required. Installing it ..."
         curl -s https://raw.githubusercontent.com/rancher/k3d/main/install.sh | bash
         # Install k3d autocompletion for bash
         echo "source <(k3d completion bash)" >> ~/.bashrc
+        footer
         #exit
     fi
 
     # Check Kubectl
     if ! type kubectl > /dev/null; then
-        echo "Kubectl could not be found. Installing it ..."
+        header "Kubectl is required. Installing it ..."
         curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl"
         chmod +x ./kubectl
         sudo mv ./kubectl /usr/local/bin/kubectl
         kubectl version --client --output yaml
+        footer
         #exit
     fi
 
     # Check Helm
     if ! type helm > /dev/null; then
-        echo "Helm could not be found. Installing it ..."
+        header "Helm is required. Installing it ..."
         curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3
         chmod +x ./get_helm.sh
         ./get_helm.sh
@@ -120,12 +122,11 @@ function checkDependencies()
         helm repo add stable https://charts.helm.sh/stable
         # Add kubernetes-dashboard repository
         helm repo add kubernetes-dashboard https://kubernetes.github.io/dashboard/
-        # Add bitnami helm repos
-        helm repo add bitnami https://charts.bitnami.com/bitnami
         # Add Prometheus helm repos
         helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
         # Update helm
         helm repo update
+        footer
         #exit
     fi
 }
@@ -160,7 +161,10 @@ function configValues()
   prompt "Host path to mount into cluster" "${CLUSTER_VOLUME_HOST_PATH}"
   CLUSTER_VOLUME_HOST_PATH=${USER_INPUT}
 
-  prompt "Install local image registry?" ${INSTALL_LOCAL_REGISTRY}
+  prompt "Persistent Volume Size (Gi)" "${CLUSTER_PV_SIZE}"
+  CLUSTER_VOLUME_HOST_PATH=${USER_INPUT}
+
+  prompt "Install local image registry? ${YES_NO}" ${INSTALL_LOCAL_REGISTRY}
   INSTALL_LOCAL_REGISTRY=${USER_INPUT}
 
   if [ $(isSelected ${USER_INPUT}) -eq 1 ];
@@ -247,6 +251,7 @@ options:
       - label: "CreatedBy=Rony"
         nodeFilters:
           - server:*
+          - agent:*
   kubeconfig:
     updateDefaultKubeconfig: true
     switchCurrentContext: true
@@ -283,9 +288,7 @@ function buildCluster()
 
   mkdir -p ${CLUSTER_VOLUME_HOST_PATH} ${LOCAL_REGISTRY_VOL_HOSTPATH}
   header "Building ${CLUSTER_NAME}"
-  echo -e "${CYAN}"
   k3d cluster create --config ./k3d-${CLUSTER_NAME}.tmp.yaml
-  echo -e "${NOCOLOR}"
   footer
 
   header "Waiting for cluster init"
@@ -311,7 +314,7 @@ metadata:
 
 spec:
   capacity:
-    storage: 20Gi
+    storage: ${CLUSTER_PV_SIZE}Gi
   accessModes:
     - ReadWriteOnce
   persistentVolumeReclaimPolicy: Retain
@@ -352,7 +355,7 @@ EOF
 function installAddons()
 {
     header "Installing Adons"
-    prompt "Install Ingress?" "${INSTALL_INGRESS}"
+    prompt "Install Ingress? ${YES_NO}" "${INSTALL_INGRESS}"
     if [ $(isSelected ${USER_INPUT}) -eq 1 ]; then
         installIngress
     fi
