@@ -70,8 +70,7 @@ function prompt()
 
 function header()
 {
-    echo
-    echo -e "${GREEN}==> ${BOLD_TXT}${1}${NORMAL_TXT}${NOCOLOR}"
+    echo -e "\n${GREEN}==> ${BOLD_TXT}${1}${NORMAL_TXT}${NOCOLOR}\n"
 }
 
 function footer()
@@ -167,7 +166,7 @@ function configValues()
   CLUSTER_VOLUME_HOST_PATH=${USER_INPUT}
 
   prompt "Persistent Volume Size (Gi)" "${CLUSTER_PV_SIZE}"
-  CLUSTER_VOLUME_HOST_PATH=${USER_INPUT}
+  CLUSTER_PV_SIZE=${USER_INPUT}
 
   prompt "Install local image registry? ${YES_NO}" ${INSTALL_LOCAL_REGISTRY}
   INSTALL_LOCAL_REGISTRY=${USER_INPUT}
