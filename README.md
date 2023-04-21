@@ -29,6 +29,57 @@ Run the following command to start the voyage. The script will guide you to setu
 $ ./k3dcluster
 ```
 
+## Using local registry
+To use the local registry, please follow the instructions below
+
+1. Check if registry contrainer is up and running
+```bash
+$ docker ps | grep "registry"
+```
+2. Pull `nginx:alpine` image
+```bash
+$ docker pull nginx:alpine
+```
+3. Tag `nginx:alpine` as follows and push it
+```bash
+ $ docker tag nginx:alpine <registry-container-name>:5000/nginx:alpine
+ $ docker push <registry-container-name>:5000/nginx:alpine
+```
+4. Deploy a Pod referencing the image above as follows
+```bash
+cat <<EOF | kubectl apply -f -
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-test-registry
+  labels:
+    app: nginx-test-registry
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx-test-registry
+  template:
+    metadata:
+      labels:
+        app: nginx-test-registry
+    spec:
+      containers:
+      - name: nginx-test-registry
+        image: <registry-container-name>:5000/nginx:alpine
+        ports:
+        - containerPort: 80
+EOF
+```
+6. Check if the pod is running fine or not
+```sh
+$ kubectl get pods -l "app=nginx-test-registry"
+```
+
+## Using Ingress with TLS
+
+tbd
+
 [k3d-site]: https://k3d.io
 [helm-site]: https://helm.sh/docs/intro/install/
 [k8s-cli]: https://kubernetes.io/docs/tasks/tools/
