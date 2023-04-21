@@ -368,12 +368,21 @@ function installAddons()
 }
 
 
-checkDependencies
+function main()
+{
+  checkDependencies
 
-configValues
+  configValues
 
-generateClusterManifest
+  generateClusterManifest
 
-buildCluster
+  buildCluster
 
-installAddons
+  installAddons
+
+  echo
+  header "Your k3d ${CLUSTER_NAME} cluster is ready for sailing. Happy voyage!!! 🎉🎉🎉"
+}
+
+
+main
