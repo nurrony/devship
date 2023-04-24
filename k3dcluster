@@ -32,6 +32,8 @@ LOCAL_REGISTRY_NAME="registry.${CLUSTER_DOMAIN}"
 LOCAL_REGISTRY_PORT=5000
 LOCAL_REGISTRY_MANIFEST=""
 LOCAL_REGISTRY_VOL_HOSTPATH=${HOME}/${CLUSTER_NAME}-registry
+CLUSTER_DOCKER_NETWORK=k3d-${CLUSTER_NAME}
+CLUSTER_DOCKER_NETWORK_MANIFEST=""
 
 # Typography
 BOLD_TXT=$(tput bold)
@@ -168,6 +170,13 @@ function configValues()
   prompt "Persistent Volume Size (Gi)" "${CLUSTER_PV_SIZE}"
   CLUSTER_PV_SIZE=${USER_INPUT}
 
+  prompt "Custom docker network name? " ${CLUSTER_DOCKER_NETWORK}
+  CLUSTER_DOCKER_NETWORK=${USER_INPUT}
+
+  if [ "${USER_INPUT}" != "k3d-${CLUSTER_NAME}" ]; then
+    CLUSTER_DOCKER_NETWORK_MANIFEST="network: ${CLUSTER_DOCKER_NETWORK}"
+  fi
+
   prompt "Install local image registry? ${YES_NO}" ${INSTALL_LOCAL_REGISTRY}
   INSTALL_LOCAL_REGISTRY=${USER_INPUT}
 
@@ -270,6 +279,7 @@ options:
           - agent:*
           - loadbalancer
 $LOCAL_REGISTRY_MANIFEST
+$CLUSTER_DOCKER_NETWORK_MANIFEST
 EOF
 cat <<EOF
 ${GREEN}Please check ${BLUE}${BOLD_TXT}./k3d-${CLUSTER_NAME}.tmp.yaml${NORMAL_TXT}${NOCOLOR} ${GREEN}for customizing your cluster.
