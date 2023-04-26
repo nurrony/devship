@@ -21,7 +21,7 @@ This repository contains my local Kubernetes dev environment powered by [k3d fro
  More coming soon...
 
 ## Generate certificates and HostMapping
-While creating cluster the script search for `{CLUSTER_DOMAIN}-key.pem` and `{CLUSTER_DOMAIN}.pem` as key and certificate file during setting up `tls` secret for `Nginx Ingress Controller`. You need to create SSL key and certificate for your domain and put it into certs directory following the naming pattern.
+While creating cluster the script search for `{CLUSTER_DOMAIN}-key.pem` and `{CLUSTER_DOMAIN}.pem` as key and certificate file during setting up `tls` secret for `Nginx Ingress Controller`. You need to create SSL key and certificate for your domain and put it into `certs` directory following the naming pattern.
 
 ## Start Voyage on Kubernetes Devship
 Run the following command to start the voyage. The script will guide you to setup your cluster
@@ -46,7 +46,7 @@ $ docker pull nginx:alpine
  $ docker tag nginx:alpine <registry-container-name>:5000/nginx:alpine
  $ docker push <registry-container-name>:5000/nginx:alpine
 ```
-4. Deploy a Pod referencing the image above as follows
+4. Deploy a `Pod` referencing the image pushed into the local registry in the step above as follows
 ```bash
 cat <<EOF | kubectl apply -f -
 apiVersion: apps/v1
