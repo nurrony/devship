@@ -9,7 +9,7 @@ This repository contains my local Kubernetes dev environment powered by [k3d fro
 3. [k3d][k3d-site]
 4. [Helm][helm-site]
 
-> ℹ️ **The script will install necessary missing softwares**
+> ℹ️ **The script will install all required missing softwares **
 
 ## Features
  - Kubernetes cluster with multi Control Plane (Server) and multi Agents (Workers)
@@ -20,7 +20,7 @@ This repository contains my local Kubernetes dev environment powered by [k3d fro
 
  More coming soon...
 
-> 📝 NOTE: The script disables **[Taerifik][traefik]** Igress Controller comes with K3D
+> 📝 NOTE: The script disables **[Taerifik][traefik]** Ingress Controller comes with K3D
 
 ## Generate certificates and HostMapping
 While creating cluster the script search for `{CLUSTER_DOMAIN}-key.pem` and `{CLUSTER_DOMAIN}.pem` as key and certificate file during setting up `tls` secret for `Nginx Ingress Controller`. You need to create SSL key and certificate for your domain and put it into `certs` directory following the naming pattern.
