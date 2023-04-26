@@ -1,6 +1,6 @@
 # Setup Nginx Ingress using Bitnami Helm Chart
 
-This document describes how to manually install [Nginx Ingress][nginx-ingress] using [Bitnami Nginx Ingress Helm Chart][bitnami-nginx-ingress-chart] with TLS support.
+This document describes how to manually install [Nginx Ingress][nginx-ingress] using [Bitnami Nginx Ingress Helm Chart][bitnami-nginx-ingress-chart] with TLS support. For more on customizing and configuring the it please go to [Bitnami Nginx Ingress Helm Chart Documentation][] 
 
 ## Add Helm Repo
 
@@ -46,9 +46,9 @@ Check the file [dockerhub.yaml](./dockerhub-nginx.yaml) example manifest and cha
 kubectl apply -f ./dockerhub-nginx.yaml
 ```
 
-Now to to https://nginx.devship.localhost and you should see Nginx default welcome page!!
+Now go to https://nginx.devship.localhost and you should see Nginx default welcome page!!
 
 
 
 [nginx-ingress]: https://github.com/kubernetes/ingress-nginx
-[bitnami-nginx-ingress-chart]: https://github.com/bitnami/charts/tree/main/bitnami/
+[bitnami-nginx-ingress-chart]: https://github.com/bitnami/charts/tree/main/bitnami/nginx-ingress-controller/#nginx-ingress-controller-packaged-by-bitnami

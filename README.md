@@ -91,7 +91,7 @@ If you did not setup ingress during creation of the cluster, you can install it 
 
 
 [nginx-ingress]: https://github.com/kubernetes/ingress-nginx
-[bitnami-nginx-ingress-chart]: https://github.com/bitnami/charts/tree/main/bitnami/nginx-ingress-controller/#installing-the-chart
+[bitnami-nginx-ingress-chart]: https://github.com/bitnami/charts/tree/main/bitnami/nginx-ingress-controller/#nginx-ingress-controller-packaged-by-bitnami
 [traefik]: https://traefik.io/
 [k3d-site]: https://k3d.io
 [helm-site]: https://helm.sh/docs/intro/install/
