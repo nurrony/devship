@@ -85,6 +85,11 @@ The script prompt you to setup [Nginx Ingress Controller][nginx-ingress] using [
 
 If you did not setup ingress during creation of the cluster, you can install it following the steps described in [Setup Nginx Ingress Controller](/examples/ingress/README.md)
 
+## Todo
+- [ ] Add Docker Registry UI
+- [ ] Add [Kube-VIP](https://kube-vip.io/) support
+
+
 [nginx-ingress]: https://github.com/kubernetes/ingress-nginx
 [bitnami-nginx-ingress-chart]: https://github.com/bitnami/charts/tree/main/bitnami/nginx-ingress-controller/#installing-the-chart
 [traefik]: https://traefik.io/
