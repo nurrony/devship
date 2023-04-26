@@ -27,7 +27,7 @@ While creating cluster the script search for `{CLUSTER_DOMAIN}-key.pem` and `{CL
 Run the following command to start the voyage. The script will guide you to setup your cluster
 
 ```bash
-$ ./k3dcluster
+$ ./kubecluster
 ```
 
 ## Using local registry
