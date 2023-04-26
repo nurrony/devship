@@ -15,8 +15,8 @@ This repository contains my local Kubernetes dev environment powered by [k3d fro
  - Kubernetes cluster with multi Control Plane (Server) and multi Agents (Workers)
  - Host directory mounted as `PersistentVolume` called `<cluster-name>-pv`
  - Use existing network for cluster
- - Seamless Local Registry Integration **[Optional]**
- - Ingress Nginx with custom certificates **[Optional]**
+ - Seamless Local Registry Integration **(Optional)**
+ - Ingress Nginx with custom certificates **(Optional)**
 
  More coming soon...
 
