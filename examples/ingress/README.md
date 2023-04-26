@@ -1,6 +1,6 @@
 # Setup Nginx Ingress using Bitnami Helm Chart
 
-This document describes how to manually install [Nginx Ingress][nginx-ingress] using [Bitnami Nginx Ingress Helm Chart][bitnami-nginx-ingress-chart] with TLS support. For more on customizing and configuring the it please go to [Bitnami Nginx Ingress Helm Chart Documentation][] 
+This document describes how to manually install [Nginx Ingress][nginx-ingress] using [Bitnami Nginx Ingress Helm Chart][bitnami-nginx-ingress-chart] with TLS support. For more on customizing and configuring the it please go to [Bitnami Nginx Ingress Helm Chart Documentation][bitnami-nginx-ingress-chart] 
 
 ## Add Helm Repo
 
