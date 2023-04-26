@@ -38,6 +38,16 @@ extraArgs:
 helm install --namespace ingress -f ingress-override.yaml ingress bitnami/nginx-ingress-controller 
 ```
 
+## Test Your Ingress
+
+Check the file [dockerhub.yaml](./dockerhub-nginx.yaml) example manifest and change the values according to your need and then execute the following command
+
+```sh
+kubectl apply -f ./dockerhub-nginx.yaml
+```
+
+Now to to https://nginx.devship.localhost and you should see Nginx default welcome page!!
+
 
 
 [nginx-ingress]: https://github.com/kubernetes/ingress-nginx
