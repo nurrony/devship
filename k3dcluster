@@ -373,8 +373,6 @@ function installAddons()
     if [ $(isSelected ${USER_INPUT}) -eq 1 ]; then
         installIngress
     fi
-
-
 }
 
 
