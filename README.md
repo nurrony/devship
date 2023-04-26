@@ -13,14 +13,14 @@ This repository contains my local Kubernetes dev environment powered by [k3d fro
 
 ## Features
  - Kubernetes cluster with multi Control Plane (Server) and multi Agents (Workers)
- - Host directory mounted as `PersistentVolume` called `devship-pv`
+ - Host directory mounted as `PersistentVolume` called `<cluster-name>-pv`
  - Use existing network for cluster
  - Seamless Local Registry Integration **[Optional]**
  - Ingress Nginx with custom certificates **[Optional]**
 
  More coming soon...
 
-> 📝 NOTE: The script disables **[Taerifik](https://traefik.io/)** Igress Controller comes with K3D
+> 📝 NOTE: The script disables **[Taerifik][traefik]** Igress Controller comes with K3D
 
 ## Generate certificates and HostMapping
 While creating cluster the script search for `{CLUSTER_DOMAIN}-key.pem` and `{CLUSTER_DOMAIN}.pem` as key and certificate file during setting up `tls` secret for `Nginx Ingress Controller`. You need to create SSL key and certificate for your domain and put it into `certs` directory following the naming pattern.
@@ -81,8 +81,13 @@ $ kubectl get pods -l "app=nginx-test-registry"
 
 ## Using Ingress with TLS
 
-tbd
+The script prompt you to setup [Nginx Ingress Controller][nginx-ingress] using [Bitnami Nginx Ingress Helm Chart][bitnami-nginx-ingress-chart] with the `TLS` support. 
 
+If you did not setup ingress during creation of the cluster, you can install it following the steps described in [Setup Nginx Ingress Controller](/examples/ingress/README.md)
+
+[nginx-ingress]: https://github.com/kubernetes/ingress-nginx
+[bitnami-nginx-ingress-chart]: https://github.com/bitnami/charts/tree/main/bitnami/nginx-ingress-controller/#installing-the-chart
+[traefik]: https://traefik.io/
 [k3d-site]: https://k3d.io
 [helm-site]: https://helm.sh/docs/intro/install/
 [k8s-cli]: https://kubernetes.io/docs/tasks/tools/
