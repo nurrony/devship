@@ -5,9 +5,9 @@ This document describes how to manually install [Nginx Ingress][nginx-ingress] u
 ## Add Helm Repo
 
 ```
-$> helm repo add bitnami https://charts.bitnami.com/bitnami
-$> helm repo update
-$> kubectl create namespace ingress
+helm repo add bitnami https://charts.bitnami.com/bitnami
+helm repo update
+kubectl create namespace ingress
 ```
 
 The commands above creates a namespace for `ingress` and add Bitname Helm Repository 
@@ -24,6 +24,18 @@ Execute the following command to create TLS secret in your cluster under `ingres
 
 ```sh
 kubectl create secret tls nginx-server-certs --key certs/devship.localhost-key.pem --cert certs/devship.localhost.pem --namespace ingress
+```
+
+## Install Nginx Ingress Controller
+
+1. Create a file called `ingress-override.yaml` to configure helm chart to use `nginx-server-certs` as the `default-ssl-certificate` with following content
+```yaml
+extraArgs:
+  default-ssl-certificate: "ingress/nginx-server-certs"
+```
+2. Install Nginx Ingress controller in `ingress` namespace by executing the following command
+```sh
+helm install --namespace ingress -f ingress-override.yaml ingress bitnami/nginx-ingress-controller 
 ```
 
 
