@@ -123,7 +123,7 @@ function checkDependencies()
     # Check Helm
     if ! type helm > /dev/null; then
         header "Helm is required. Installing it ..."
-        curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3
+        curl -fsSL -o ${SCRIPT_DIR}/get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3
         chmod +x ${SCRIPT_DIR}/get_helm.sh
         ${SCRIPT_DIR}/get_helm.sh
         echo "source <(helm completion $USER_SHELL_NAME)" >> ~/".${USER_SHELL_NAME}rc"
@@ -136,6 +136,7 @@ function checkDependencies()
         helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
         # Update helm
         helm repo update
+        rm -f ${SCRIPT_DIR}/get_helm.sh
         footer
         #exit
     fi
