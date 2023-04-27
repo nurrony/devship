@@ -86,11 +86,15 @@ function checkDependencies()
 {
     # Check Docker
     if ! type docker > /dev/null; then
-        echo "Docker is required. Installing it ..."
-        curl -L -o ./install-docker.sh "https://get.docker.com"
-        chmod +x ./install-docker.sh
-        ./install-docker.sh
-        sudo usermod -aG docker $USER
+        header "Docker is required. Installing it ..."
+        case "$OSTYPE" in
+          linux*)   curl -L -o ${SCRIPT_DIR}/install-docker.sh "https://get.docker.com" && chmod +x ${SCRIPT_DIR}/install-docker.sh && ${SCRIPT_DIR}/install-docker.sh && sudo usermod -aG docker $USER;;
+          darwin*)  echo -e "${GREEN}Download Docker Desktop from for macOS from${NOCOLOR} ${BLUE}https://www.docker.com/products/docker-desktop${NOCOLOR}" ;;
+          win*)     echo -e "${GREEN}Download Docker Desktop from for Windows from${NOCOLOR} ${BLUE}https://www.docker.com/products/docker-desktop${NOCOLOR}" ;;
+          *)        echo "unsupported: $OSTYPE" && exit 1 ;;
+        esac
+        rm -f ${SCRIPT_DIR}/install-docker.sh
+        footer
         #exit
     fi
 
@@ -108,8 +112,8 @@ function checkDependencies()
     if ! type kubectl > /dev/null; then
         header "Kubectl is required. Installing it ..."
         curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl"
-        chmod +x ./kubectl
-        sudo mv ./kubectl /usr/local/bin/kubectl
+        chmod +x ${SCRIPT_DIR}/kubectl
+        sudo mv ${SCRIPT_DIR}/kubectl /usr/local/bin/kubectl
         kubectl version --client --output yaml
         echo "source <(kubectl completion $USER_SHELL_NAME)" >> ~/".${USER_SHELL_NAME}rc"
         footer
@@ -120,8 +124,8 @@ function checkDependencies()
     if ! type helm > /dev/null; then
         header "Helm is required. Installing it ..."
         curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3
-        chmod +x ./get_helm.sh
-        ./get_helm.sh
+        chmod +x ${SCRIPT_DIR}/get_helm.sh
+        ${SCRIPT_DIR}/get_helm.sh
         echo "source <(helm completion $USER_SHELL_NAME)" >> ~/".${USER_SHELL_NAME}rc"
 
         # Add default repos
@@ -220,7 +224,7 @@ function generateClusterManifest()
 {
   header "Generating K3D cluster definition file"
   # For more check: https://github.com/rancher/k3d/blob/main/tests/assets/config_test_simple.yaml
-cat > ./k3d-${CLUSTER_NAME}.tmp.yaml <<EOF
+cat > ${SCRIPT_DIR}/k3d-${CLUSTER_NAME}.tmp.yaml <<EOF
 apiVersion: k3d.io/v1alpha4
 kind: Simple
 metadata:
@@ -282,7 +286,7 @@ $LOCAL_REGISTRY_MANIFEST
 $CLUSTER_DOCKER_NETWORK_MANIFEST
 EOF
 cat <<EOF
-${GREEN}Please check ${BLUE}${BOLD_TXT}./k3d-${CLUSTER_NAME}.tmp.yaml${NORMAL_TXT}${NOCOLOR} ${GREEN}for customizing your cluster.
+${GREEN}Please check ${BLUE}${BOLD_TXT}${SCRIPT_DIR}/k3d-${CLUSTER_NAME}.tmp.yaml${NORMAL_TXT}${NOCOLOR} ${GREEN}for customizing your cluster.
 For more please check ${BLUE}https://github.com/rancher/k3d/blob/main/tests/assets/config_test_simple.yaml${NOCOLOR}
 
 ${GREEN}==> ${RED}${BOLD_TXT}It will DELETE any existing cluster named k3d-${CLUSTER_NAME}${NORMAL_TXT}${NOCOLOR} ${GREEN}<==${NOCOLOR}
@@ -302,7 +306,7 @@ function buildCluster()
 
   mkdir -p ${CLUSTER_VOLUME_HOST_PATH} ${LOCAL_REGISTRY_VOL_HOSTPATH}
   header "Building ${CLUSTER_NAME}"
-  k3d cluster create --config ./k3d-${CLUSTER_NAME}.tmp.yaml
+  k3d cluster create --config ${SCRIPT_DIR}/k3d-${CLUSTER_NAME}.tmp.yaml
   footer
 
   header "Waiting for cluster init"
@@ -310,7 +314,7 @@ function buildCluster()
   kubectl config use-context k3d-${CLUSTER_NAME}
   kubectl cluster-info
   footer
-  rm -f ./k3d-${CLUSTER_NAME}.tmp.yaml
+  rm -f ${SCRIPT_DIR}/k3d-${CLUSTER_NAME}.tmp.yaml
 
   provisionPersistentVolume
 }
@@ -352,7 +356,7 @@ installIngress ()
   # Create Namespace
   kubectl create namespace ingress
   # Create a secret with server certificate
-  kubectl --namespace ingress create secret tls nginx-server-certs --key certs/${CLUSTER_DOMAIN}-key.pem --cert certs/${CLUSTER_DOMAIN}.pem
+  kubectl --namespace ingress create secret tls nginx-server-certs --key ${SCRIPT_DIR}/certs/${CLUSTER_DOMAIN}-key.pem --cert ${SCRIPT_DIR}/certs/${CLUSTER_DOMAIN}.pem
   # Install ingress with tls enabled providing certificates stored in namespace
   cat <<EOF | helm install --namespace ingress -f - ingress bitnami/nginx-ingress-controller
 extraArgs:
