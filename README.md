@@ -9,7 +9,7 @@ This repository contains my local Kubernetes dev environment powered by [k3d fro
 3. [k3d][k3d-site]
 4. [Helm][helm-site]
 
-> ℹ️ **The script will install all required missing softwares **
+> ℹ️ **The script will install all required missing softwares**
 
 ## Features
  - Kubernetes cluster with multi Control Plane (Server) and multi Agents (Workers)
