@@ -226,7 +226,7 @@ function generateClusterManifest()
   header "Generating K3D cluster definition file"
   # For more check: https://github.com/rancher/k3d/blob/main/tests/assets/config_test_simple.yaml
 cat > ${SCRIPT_DIR}/k3d-${CLUSTER_NAME}.tmp.yaml <<EOF
-apiVersion: k3d.io/v1alpha4
+apiVersion: k3d.io/v1alpha5
 kind: Simple
 metadata:
   name: ${CLUSTER_NAME}
