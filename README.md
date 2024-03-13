@@ -29,7 +29,7 @@ While creating cluster the script search for `{CLUSTER_DOMAIN}-key.pem` and `{CL
 Run the following command to start the voyage. The script will guide you to setup your cluster
 
 ```bash
-$ ./kubecluster
+$ ./devship
 ```
 
 ## Using local registry
@@ -81,7 +81,7 @@ $ kubectl get pods -l "app=nginx-test-registry"
 
 ## Using Ingress with TLS
 
-The script prompt you to setup [Nginx Ingress Controller][nginx-ingress] using [Bitnami Nginx Ingress Helm Chart][bitnami-nginx-ingress-chart] with the `TLS` support. 
+The script prompt you to setup [Nginx Ingress Controller][nginx-ingress] using [Bitnami Nginx Ingress Helm Chart][bitnami-nginx-ingress-chart] with the `TLS` support.
 
 If you did not setup ingress during creation of the cluster, you can install it following the steps described in [Setup Nginx Ingress Controller](/examples/ingress/README.md)
 
