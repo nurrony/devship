@@ -252,7 +252,7 @@ options:
         nodeFilters:
           - server:*
     nodeLabels:
-      - label: "CreatedBy=Rony"
+      - label: "CreatedBy=${USER}"
         nodeFilters:
           - server:*
           - agent:*
@@ -264,7 +264,7 @@ options:
     serversMemory: ""
     agentsMemory: ""
     labels:
-      - label: CreatedBy=Rony
+      - label: CreatedBy=${USER}
         nodeFilters:
           - server:*
           - agent:*
