@@ -334,7 +334,7 @@ installIngress() {
   header "Instaling Nginx Ingress Controller"
 
   helm repo update
-  helm repo add bitnami https://charts.bitnami.com/bitnami
+  helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
   helm repo update
 
   # Create Namespace
@@ -342,7 +342,7 @@ installIngress() {
   # Create a secret with server certificate
   kubectl --namespace ingress create secret tls nginx-server-certs --key ${SCRIPT_DIR}/certs/${CLUSTER_DOMAIN}-key.pem --cert ${SCRIPT_DIR}/certs/${CLUSTER_DOMAIN}.pem
   # Install ingress with tls enabled providing certificates stored in namespace
-  cat <<EOF | helm install --namespace ingress -f - ingress bitnami/nginx-ingress-controller
+  cat <<EOF | helm install --namespace ingress -f - ingress-nginx/ingress-nginx
 extraArgs:
   default-ssl-certificate: "ingress/nginx-server-certs"
 EOF
