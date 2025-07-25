@@ -349,7 +349,7 @@ function installAddons() {
 
     local CUSTOM_DASHBOARD_VALUE_FILE=''
     if [ -f "${PWD}/extras/configs/dashboard.yaml" ]; then
-      CUSTOM_DASHBOARD_VALUE_FILE="${PWD}/extras/configs/dashboard.yaml"
+      CUSTOM_DASHBOARD_VALUE_FILE="${PWD}/extras/dashboard.yaml"
     fi
 
     # Add kubernetes-dashboard repository
