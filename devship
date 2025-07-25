@@ -17,6 +17,7 @@ LB_HTTPS_PORT=443
 USER_INPUT=
 SERVERS=1
 AGENTS=1
+CONTAINER_RUNTIME=docker
 
 # Addons
 TRAEFIK_V2=No
@@ -135,6 +136,9 @@ function checkDependencies() {
 
 function configValues() {
   echo
+  prompt "Container Runtime" "${CONTAINER_RUNTIME}"
+  CONTAINER_RUNTIME=${USER_INPUT}
+
   prompt "Cluster Name" "${CLUSTER_NAME}"
   CLUSTER_NAME=${USER_INPUT}
 
@@ -181,6 +185,7 @@ function configValues() {
 }
 
 function generateClusterRegistryManifest() {
+  LOCAL_REGISTRY_NAME="registry.${CLUSTER_DOMAIN}"
   prompt "Local registry name" "${LOCAL_REGISTRY_NAME}"
   LOCAL_REGISTRY_NAME=${USER_INPUT}
 
@@ -291,8 +296,16 @@ function buildCluster() {
   footer
 
   mkdir -p ${CLUSTER_VOLUME_HOST_PATH} ${LOCAL_REGISTRY_VOL_HOSTPATH}
-  header "Building ${CLUSTER_NAME}"
-  k3d cluster create --config ${SCRIPT_DIR}/k3d-${CLUSTER_NAME}.tmp.yaml
+
+  if [[ "$CONTAINER_RUNTIME" == "docker" ]]; then
+      header "Building ${CLUSTER_NAME} with ${CONTAINER_RUNTIME}..."
+    k3d cluster create --config ${SCRIPT_DIR}/k3d-${CLUSTER_NAME}.tmp.yaml
+  else
+    header "Building ${CLUSTER_NAME} with ${CONTAINER_RUNTIME}..."
+    export DOCKER_HOST=unix:///run/podman/podman.sock
+    export DOCKER_SOCK=/run/podman/podman.sock
+    sudo --preserve-env=DOCKER_HOST --preserve-env=DOCKER_SOCK k3d cluster create --config ${SCRIPT_DIR}/k3d-${CLUSTER_NAME}.tmp.yaml
+  fi
   footer
 
   header "Waiting for cluster init"
@@ -366,7 +379,7 @@ function main() {
   configValues
   generateClusterManifest
   buildCluster
-  installAddons
+  # installAddons
   header "Your ${CLUSTER_NAME} kubernetes cluster is ready for sailing. Happy voyage!!! 🚢 🚢 🚢"
 }
 
