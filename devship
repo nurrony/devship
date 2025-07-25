@@ -340,35 +340,13 @@ EOF
   footer
 }
 
-installIngress() {
-  header "Instaling Nginx Ingress Controller"
-
-  helm repo update
-  helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
-  helm repo update
-
-  # Create Namespace
-  kubectl create namespace ingress
-  # Create a secret with server certificate
-  kubectl --namespace ingress create secret tls nginx-server-certs --key ${SCRIPT_DIR}/certs/${CLUSTER_DOMAIN}-key.pem --cert ${SCRIPT_DIR}/certs/${CLUSTER_DOMAIN}.pem
-  # Install ingress with tls enabled providing certificates stored in namespace
-  cat <<EOF | helm install --namespace ingress -f - ingress-nginx/ingress-nginx
-extraArgs:
-  default-ssl-certificate: "ingress/nginx-server-certs"
-EOF
-  footer
-  sleep 5
-  header "LoadBalancer Details"
-  kubectl --namespace ingress get svc | egrep -e NAME -e LoadBalancer
-  footer
-}
 
 function installAddons() {
   header "Installing Adons"
-  prompt "Install Ingress? ${YES_NO}" "${INSTALL_INGRESS}"
-  if [ $(isSelected ${USER_INPUT}) -eq 1 ]; then
-    installIngress
-  fi
+  # prompt "Install Ingress? ${YES_NO}" "${INSTALL_INGRESS}"
+  # if [ $(isSelected ${USER_INPUT}) -eq 1 ]; then
+  #   installIngress
+  # fi
 }
 
 function main() {
