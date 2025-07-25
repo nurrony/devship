@@ -122,10 +122,6 @@ function checkDependencies() {
 
     # Add default repos
     helm repo add stable https://charts.helm.sh/stable
-    # Add kubernetes-dashboard repository
-    helm repo add kubernetes-dashboard https://kubernetes.github.io/dashboard/
-    # Add Prometheus helm repos
-    helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
     # Update helm
     helm repo update
     rm -f ${SCRIPT_DIR}/get_helm.sh
@@ -340,13 +336,26 @@ EOF
   footer
 }
 
-
+# ==================== AddOns Section ============================
 function installAddons() {
   header "Installing Adons"
   # prompt "Install Ingress? ${YES_NO}" "${INSTALL_INGRESS}"
   # if [ $(isSelected ${USER_INPUT}) -eq 1 ]; then
   #   installIngress
   # fi
+
+  prompt "Install Dashboard? ${YES_NO}" "${INSTALL_DASHBOARD}"
+  if [ $(isSelected ${USER_INPUT}) -eq 1 ]; then
+
+    local CUSTOM_DASHBOARD_VALUE_FILE=''
+    if [ -f "${PWD}/extras/configs/dashboard.yaml" ]; then
+      CUSTOM_DASHBOARD_VALUE_FILE="${PWD}/extras/configs/dashboard.yaml"
+    fi
+
+    # Add kubernetes-dashboard repository
+    helm repo add kubernetes-dashboard https://kubernetes.github.io/dashboard/
+    helm install kubernetes-dashboard/kubernetes-dashboard --name kubernetes-dashboard -f $CUSTOM_DASHBOARD_VALUE_FILE
+  fi
 }
 
 function main() {
