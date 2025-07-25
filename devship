@@ -253,9 +253,6 @@ options:
       - arg: "--tls-san=127.0.0.1"
         nodeFilters:
           - server:*
-      - arg: "--disable=traefik" # disable traefik
-        nodeFilters:
-          - server:*
     nodeLabels:
       - label: "CreatedBy=${USER}"
         nodeFilters:
@@ -379,7 +376,7 @@ function main() {
   configValues
   generateClusterManifest
   buildCluster
-  # installAddons
+  installAddons
   header "Your ${CLUSTER_NAME} kubernetes cluster is ready for sailing. Happy voyage!!! 🚢 🚢 🚢"
 }
 
