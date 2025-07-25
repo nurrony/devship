@@ -237,7 +237,7 @@ ports:
 options:
   k3d:
     wait: true
-    timeout: 30s
+    timeout: 120s
     disableLoadbalancer: false
     disableImageVolume: false
     disableRollback: false
