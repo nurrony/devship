@@ -26,6 +26,10 @@ INSTALL_INGRESS=Yes
 INSTALL_DASHBOARD=No
 INSTALL_PROMETHEUS=No
 
+# Tls
+INSTALL_SERVICE_TLS=No
+CLUSTER_TLS_MANIFEST=""
+
 # Local Registry
 LOCAL_REGISTRY_HOST="0.0.0.0"
 LOCAL_REGISTRY_NAME="registry.${CLUSTER_DOMAIN}"
@@ -193,6 +197,13 @@ function configValues() {
     generateClusterPersistentVolumeManifest
   fi
 
+  prompt "Install TLS Certificates for Service? ${YES_NO}" ${INSTALL_SERVICE_TLS}
+  INSTALL_SERVICE_TLS=${USER_INPUT}
+
+  if [ $(isSelected ${USER_INPUT}) -eq 1 ]; then
+    generateServiceTLSManifest
+  fi
+
   prompt "Install local image registry? ${YES_NO}" ${INSTALL_LOCAL_REGISTRY}
   INSTALL_LOCAL_REGISTRY=${USER_INPUT}
 
@@ -231,6 +242,43 @@ registries:
 "
 }
 
+function generateServiceTLSManifest() {
+  local TLS_KEY_FILE=${SCRIPT_DIR}/certs/${CLUSTER_DOMAIN}.key
+  local TLS_CERT_FILE=${SCRIPT_DIR}/certs/${CLUSTER_DOMAIN}.crt
+
+  prompt "TLS Key File" "${TLS_KEY_FILE}"
+  TLS_KEY_FILE=${USER_INPUT}
+
+  prompt "TLS Certificate File" "${TLS_CERT_FILE}"
+  TLS_CERT_FILE=${USER_INPUT}
+
+  if [[ ! -f "$TLS_CERT_FILE" || ! -f "$TLS_KEY_FILE" ]]; then
+    echo "Error: One or both TLS files do not exist." >&2
+    echo ${GREEN}==> ${RED}${BOLD_TXT}Error: One or both TLS files do not exist. ${NORMAL_TXT}${NOCOLOR} ${GREEN}<==${NOCOLOR}
+    exit 1
+  fi
+  local TLS_KEY_FILE_BASE64="$(cat $TLS_KEY_FILE | base64 -w 0)"
+  local TLS_CERT_FILE_BASE64="$(cat $TLS_CERT_FILE | base64 -w 0)"
+
+  CLUSTER_TLS_MANIFEST="  - description: \" TLS Certificate for $CLUSTER_NAME services\"
+    source: |
+      apiVersion: v1
+      kind: Secret
+      type: kubernetes.io/tls
+      metadata:
+        name: ${CLUSTER_NAME}-service-certs
+        namespace: kube-system
+      data:
+        tls.crt: >-
+          ${TLS_CERT_FILE_BASE64}
+        tls.key: >-
+          ${TLS_KEY_FILE_BASE64}
+    destination: /var/lib/rancher/k3s/server/manifests/${CLUSTER_NAME}-service-certs.yaml
+    nodeFilters:
+      - \"server:*\"
+"
+
+}
 function generateClusterPersistentVolumeManifest() {
   prompt "Persistent Volume Size (Gi)" "${CLUSTER_PV_SIZE}"
   CLUSTER_PV_SIZE=${USER_INPUT}
