@@ -234,6 +234,13 @@ ports:
   - port: 0.0.0.0:${LB_HTTP_PORT}:80
     nodeFilters:
       - loadbalancer
+hostAliases:
+  - ip: 1.1.1.1
+    hostnames:
+      - cloud.flare.dns
+  - ip: 8.8.8.8
+    hostnames:
+      - google-dns
 options:
   k3d:
     wait: true
@@ -246,14 +253,18 @@ options:
       - arg: "--tls-san=*.${CLUSTER_DOMAIN}"
         nodeFilters:
           - server:*
+          - agent:*
+          - loadbalancer:*
       - arg: "--tls-san=127.0.0.1"
         nodeFilters:
           - server:*
+          - loadbalancer:*
     nodeLabels:
       - label: "CreatedBy=${USER}"
         nodeFilters:
           - server:*
           - agent:*
+          - loadbalancer:*
   kubeconfig:
     updateDefaultKubeconfig: true
     switchCurrentContext: true
