@@ -86,6 +86,7 @@ If you did not setup ingress during creation of the cluster, you can install it 
 
 ## Todo
 - [ ] Add Docker Registry UI
+- [ ] Enable Traefik Dashboard
 - [ ] Add [Kube-VIP](https://kube-vip.io/) support
 
 

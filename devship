@@ -229,6 +229,8 @@ registries:
     name: ${LOCAL_REGISTRY_NAME}
     host: \"${LOCAL_REGISTRY_HOST}\"
     hostPort: \"${LOCAL_REGISTRY_PORT}\"
+    proxy: # omit this to have a "normal" registry, set this to create a registry proxy (pull-through cache)
+      remoteURL: https://registry-1.docker.io
     volumes:
       - ${LOCAL_REGISTRY_VOL_HOSTPATH}:/var/lib/registry
   config: |
