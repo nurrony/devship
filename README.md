@@ -13,17 +13,16 @@ This repository contains my local Kubernetes dev environment powered by [k3d fro
 
 ## Features
  - Kubernetes cluster with multi Control Plane (Server) and multi Agents (Workers)
- - Host directory mounted as `PersistentVolume` called `<cluster-name>-pv`
+ - Host directory mounted as `PersistentVolume` called `<cluster-name>-pv` (Opt-In)
  - Use existing network for cluster
  - Seamless Local Registry Integration
- - Ingress Nginx with custom certificates
+ - Ability to install TLS for services that ensures E2E Secure connection even for local environment
+ - Use `podman` as container runtime (experimental)
 
  More coming soon...
 
-> 📝 NOTE: The script disables **[Taerifik][traefik]** Ingress Controller comes with K3D
-
 ## Generate certificates and HostMapping
-While creating cluster the script search for `{CLUSTER_DOMAIN}-key.pem` and `{CLUSTER_DOMAIN}.pem` as key and certificate file during setting up `tls` secret for `Nginx Ingress Controller`. You need to create SSL key and certificate for your domain and put it into `certs` directory following the naming pattern.
+While creating cluster the script search for `{CLUSTER_DOMAIN}.key` and `{CLUSTER_DOMAIN}.crt` as key and certificate file during setting up `tls` secret. You need to create SSL key and certificate for your domain and put it into `certs` directory following the naming pattern.
 
 ## Start Voyage on Kubernetes Devship
 Run the following command to start the voyage. The script will guide you to setup your cluster
