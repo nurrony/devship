@@ -22,7 +22,7 @@ CONTAINER_RUNTIME=docker
 K3S_TRAEFIK_ARGS=""
 DISABLE_BUILITIN_TRAEFIK=Yes
 INSTALL_LOCAL_REGISTRY=Yes
-INSTALL_INGRESS=Yes
+INSTALL_TRAEFIK=Yes
 INSTALL_DASHBOARD=No
 INSTALL_PROMETHEUS=No
 
@@ -84,6 +84,27 @@ function header() {
 
 function footer() {
   echo
+}
+
+function isClusterReady() {
+
+  until kubectl cluster-info &> /dev/null; do
+    echo "Waiting for cluster API..."
+    sleep 5
+  done
+
+  # Wait for all nodes to be Ready
+  until kubectl get nodes | grep -q ' Ready'; do
+    echo "Waiting for at least one Ready node..."
+    sleep 5
+  done
+
+  # Optionally wait for all kube-system pods to be Running
+  while kubectl get pods -n kube-system | grep -v 'Running\|Completed'; do
+    echo "Waiting for all kube-system pods to be Running..."
+    sleep 5
+  done
+
 }
 
 # Check if exist docker, k3d and kubectl
@@ -175,6 +196,7 @@ function configValues() {
   CLUSTER_DOCKER_NETWORK=${USER_INPUT}
 
   prompt "Disable Buitin Traefik? " ${DISABLE_BUILITIN_TRAEFIK}
+  DISABLE_BUILITIN_TRAEFIK=${USER_INPUT}
   if [ $(isSelected ${USER_INPUT}) -eq 1 ]; then
     K3S_TRAEFIK_ARGS="
       - arg: \"--disable=traefik\" # disable traefik
@@ -429,9 +451,8 @@ function buildCluster() {
   footer
 
   header "Waiting for cluster init"
-  sleep 5
   kubectl config use-context k3d-${CLUSTER_NAME}
-  kubectl cluster-info
+  isClusterReady
   footer
   rm -f ${SCRIPT_DIR}/k3d-${CLUSTER_NAME}.tmp.yaml
 }
@@ -440,10 +461,13 @@ function buildCluster() {
 # ==================== AddOns Section ============================
 function installAddons() {
   header "Installing Adons"
-  # prompt "Install Ingress? ${YES_NO}" "${INSTALL_INGRESS}"
-  # if [ $(isSelected ${USER_INPUT}) -eq 1 ]; then
-  #   installIngress
-  # fi
+
+  if [ $(isSelected ${DISABLE_BUILITIN_TRAEFIK}) -eq 1 ]; then
+    prompt "Install Traefik? ${YES_NO}" "${INSTALL_TRAEFIK}"
+    if [ $(isSelected ${USER_INPUT}) -eq 0 ]; then
+      installTraefik
+    fi
+  fi
 
   prompt "Install Dashboard? ${YES_NO}" "${INSTALL_DASHBOARD}"
   if [ $(isSelected ${USER_INPUT}) -eq 1 ]; then
@@ -457,6 +481,60 @@ function installAddons() {
     helm repo add kubernetes-dashboard https://kubernetes.github.io/dashboard/
     helm install kubernetes-dashboard/kubernetes-dashboard --name kubernetes-dashboard -f $CUSTOM_DASHBOARD_VALUE_FILE
   fi
+}
+
+function installTraefik() {
+  header "Installing Traefik"
+  local TRAEFIK_TRUSTSTORE_MANIFEST=""
+  local TRAEFIK_DASHBOARD_USERNAME=admin
+  local TRAEFIK_DASHBOARD_PASSWORD=admin
+
+  prompt "Traefik dashboard username" "${TRAEFIK_DASHBOARD_USERNAME}"
+  TRAEFIK_DASHBOARD_USERNAME=${USER_INPUT}
+
+  prompt "Traefik dashboard password" "${TRAEFIK_DASHBOARD_PASSWORD}"
+  TRAEFIK_DASHBOARD_PASSWORD=${USER_INPUT}
+
+  if [ $(isSelected ${INSTALL_SERVICE_TLS}) -eq 1 ]; then
+    TRAEFIK_TRUSTSTORE_MANIFEST="
+tlsStore:
+  default:
+    defaultCertificate:
+      secretName: ${CLUSTER_NAME}-service-certs
+"
+  fi
+  helm repo add traefik https://traefik.github.io/charts
+  helm repo update
+  helm install traefik traefik/traefik -f - <<EOF
+# Create an IngressRoute for the traefik dashboard
+ingressRoute:
+  dashboard:
+    enabled: true
+    matchRule: Host(`traefik.nurrony.localhost`)
+    entryPoints: ["websecure"]
+    middlewares:
+      - name: traefik-dashboard-auth
+${TRAEFIK_TRUSTSTORE_MANIFEST}
+extraObjects:
+  - apiVersion: v1
+    kind: Secret
+    metadata:
+      name: traefik-dashboard-auth-secret
+    type: kubernetes.io/basic-auth
+    stringData:
+      username: ${TRAEFIK_DASHBOARD_USERNAME}
+      password: ${TRAEFIK_DASHBOARD_PASSWORD}
+
+  - apiVersion: traefik.io/v1alpha1
+    kind: Middleware
+    metadata:
+      name: traefik-dashboard-basic-auth
+    spec:
+      basicAuth:
+        secret: traefik-dashboard-basic-auth-secret
+
+EOF
+  footer
 }
 
 function main() {
