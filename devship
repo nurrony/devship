@@ -27,7 +27,7 @@ INSTALL_DASHBOARD=No
 INSTALL_PROMETHEUS=No
 
 # Tls
-INSTALL_SERVICE_TLS=No
+INSTALL_SERVICE_TLS=Yes
 CLUSTER_TLS_MANIFEST=""
 
 # Local Registry
@@ -98,13 +98,6 @@ function isClusterReady() {
     echo "Waiting for at least one Ready node..."
     sleep 5
   done
-
-  # Optionally wait for all kube-system pods to be Running
-  while kubectl get pods -n kube-system | grep -v 'Running\|Completed'; do
-    echo "Waiting for all kube-system pods to be Running..."
-    sleep 5
-  done
-
 }
 
 # Check if exist docker, k3d and kubectl
@@ -284,7 +277,7 @@ function generateServiceTLSManifest() {
   local TLS_KEY_FILE_BASE64="$(cat $TLS_KEY_FILE | base64 -w 0)"
   local TLS_CERT_FILE_BASE64="$(cat $TLS_CERT_FILE | base64 -w 0)"
 
-  CLUSTER_TLS_MANIFEST="  - description: \" TLS Certificate for $CLUSTER_NAME services\"
+  CLUSTER_TLS_MANIFEST="  - description: \"TLS Certificate for $CLUSTER_NAME services\"
     source: |
       apiVersion: v1
       kind: Secret
@@ -301,8 +294,8 @@ function generateServiceTLSManifest() {
     nodeFilters:
       - \"server:*\"
 "
-
 }
+
 function generateClusterPersistentVolumeManifest() {
   prompt "Persistent Volume Size (Gi)" "${CLUSTER_PV_SIZE}"
   CLUSTER_PV_SIZE=${USER_INPUT}
@@ -461,33 +454,66 @@ function buildCluster() {
 # ==================== AddOns Section ============================
 function installAddons() {
   header "Installing Adons"
-
   if [ $(isSelected ${DISABLE_BUILITIN_TRAEFIK}) -eq 1 ]; then
+    INSTALL_TRAEFIK=Yes
     prompt "Install Traefik? ${YES_NO}" "${INSTALL_TRAEFIK}"
-    if [ $(isSelected ${USER_INPUT}) -eq 0 ]; then
+    if [ $(isSelected ${USER_INPUT}) -eq 1 ]; then
       installTraefik
     fi
   fi
 
   prompt "Install Dashboard? ${YES_NO}" "${INSTALL_DASHBOARD}"
   if [ $(isSelected ${USER_INPUT}) -eq 1 ]; then
-
-    local CUSTOM_DASHBOARD_VALUE_FILE=''
-    if [ -f "${PWD}/extras/configs/dashboard.yaml" ]; then
-      CUSTOM_DASHBOARD_VALUE_FILE="${PWD}/extras/dashboard.yaml"
-    fi
-
-    # Add kubernetes-dashboard repository
-    helm repo add kubernetes-dashboard https://kubernetes.github.io/dashboard/
-    helm install kubernetes-dashboard/kubernetes-dashboard --name kubernetes-dashboard -f $CUSTOM_DASHBOARD_VALUE_FILE
+    installK8sDashboard
   fi
 }
 
+function installK8sDashboard() {
+  # Add kubernetes-dashboard repository
+  helm repo add kubernetes-dashboard https://kubernetes.github.io/dashboard/
+  helm repo update
+  helm upgrade --install kubernetes-dashboard kubernetes-dashboard/kubernetes-dashboard --create-namespace --namespace kubernetes-dashboard
+header "Accessing the Dashboard UI"
+  kubectl apply -f - <<EOF
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ${CLUSTER_NAME}
+  namespace: kubernetes-dashboard
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: dashboard-rolebind
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+  - kind: ServiceAccount
+    name: ${CLUSTER_NAME}
+    namespace: kubernetes-dashboard
+EOF
+
+  cat <<EOF
+  # generate token
+  kubectl --namespace kubernetes-dashboard create token "${CLUSTER_NAME}"
+
+  # port forward kubernetes dashboard kong proxy
+  kubectl -n kubernetes-dashboard port-forward svc/kubernetes-dashboard-kong-proxy <your-port>:443
+
+  Kubectl will make Dashboard available at https://localhost:<your-port>.
+EOF
+footer
+
+}
 function installTraefik() {
   header "Installing Traefik"
   local TRAEFIK_TRUSTSTORE_MANIFEST=""
   local TRAEFIK_DASHBOARD_USERNAME=admin
-  local TRAEFIK_DASHBOARD_PASSWORD=admin
+  local TRAEFIK_DASHBOARD_PASSWORD=${CLUSTER_NAME}
 
   prompt "Traefik dashboard username" "${TRAEFIK_DASHBOARD_USERNAME}"
   TRAEFIK_DASHBOARD_USERNAME=${USER_INPUT}
@@ -505,13 +531,13 @@ tlsStore:
   fi
   helm repo add traefik https://traefik.github.io/charts
   helm repo update
-  helm install traefik traefik/traefik -f - <<EOF
+  helm install traefik traefik/traefik --namespace kube-system -f - <<EOF
 # Create an IngressRoute for the traefik dashboard
 ingressRoute:
   dashboard:
     enabled: true
-    matchRule: Host(`traefik.nurrony.localhost`)
-    entryPoints: ["websecure"]
+    matchRule: Host(\`traefik.${CLUSTER_DOMAIN}\`)
+    entryPoints: ["websecure", "web"]
     middlewares:
       - name: traefik-dashboard-auth
 ${TRAEFIK_TRUSTSTORE_MANIFEST}
