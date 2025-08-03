@@ -8,7 +8,7 @@ ingressRoute:
       - name: traefik-dashboard-auth
 
 tlsStore:
-  default:
+  traefik-default-certs:
     defaultCertificate:
       secretName: devship-service-certs
 
