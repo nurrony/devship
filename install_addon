@@ -1,8 +1,17 @@
+#!/usr/bin/env bash
+# Move this to devship
+echo "Install Traefik using Helm"
+helm repo add traefik https://traefik.github.io/charts
+helm repo update
+echo -n "Enter Traefik Dashboard password [nurrony]: "
+read -s TRAEFIK_DASHBOARD_PASS
+TRAEFIK_DASHBOARD_PASS=${TRAEFIK_DASHBOARD_PASS:-nurrony}
+helm install traefik traefik/traefik --namespace kube-system --wait -f - <<EOF
 # Create an IngressRoute for the dashboard
 ingressRoute:
   dashboard:
     enabled: true
-    matchRule: Host(`traefik.nurrony.localhost`)
+    matchRule: Host(\`traefik.nurrony.localhost\`)
     entryPoints: ["websecure"]
     middlewares:
       - name: traefik-dashboard-auth
@@ -29,3 +38,4 @@ extraObjects:
     spec:
       basicAuth:
         secret: traefik-dashboard-auth-secret
+EOF
