@@ -442,9 +442,10 @@ function installAddons() {
       CUSTOM_DASHBOARD_VALUE_FILE="${PWD}/extras/dashboard.yaml"
     fi
 
-    # Add kubernetes-dashboard repository
-    helm repo add kubernetes-dashboard https://kubernetes.github.io/dashboard/
-    helm install kubernetes-dashboard/kubernetes-dashboard --name kubernetes-dashboard -f $CUSTOM_DASHBOARD_VALUE_FILE
+    # Add headlamp repository
+    helm repo add headlamp https://kubernetes-sigs.github.io/headlamp/
+    helm repo update
+    helm install my-headlamp headlamp/headlamp --namespace kube-system -f $CUSTOM_DASHBOARD_VALUE_FILE
   fi
 }
 
