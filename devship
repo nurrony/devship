@@ -141,11 +141,24 @@ function checkDependencies() {
   fi
 }
 
+function confirmToProceed() {
+  echo -e "${GREEN}Checking if a k3d cluster called $CLUSTER_NAME is already running or not...${NOCOLOR}"
+
+  local SHOULD_PROCEED=No
+  if k3d cluster get "$CLUSTER_NAME" >/dev/null 2>&1; then
+    echo "Cluster '$CLUSTER_NAME' already exists."
+    prompt "Do you want to proceed? ${YES_NO}" "${SHOULD_PROCEED}"
+    SHOULD_PROCEED=${USER_INPUT}
+    if [ $(isSelected ${USER_INPUT}) -eq 0 ]; then
+      echo -e "${CYAN}👋 Operation cancelled. No changes were made to existing ${CLUSTER_NAME} cluster.${NOCOLOR}"
+      exit 0;
+    fi
+  fi
+
+}
+
 function configValues() {
   echo
-  prompt "Cluster Name" "${CLUSTER_NAME}"
-  CLUSTER_NAME=${USER_INPUT}
-
   prompt "Cluster K3s Image Tag" "${CLUSTER_K3S_IMAGE_TAG}"
   CLUSTER_K3S_IMAGE_TAG=${USER_INPUT}
 
@@ -185,20 +198,6 @@ function configValues() {
 
   prompt "Host path to mount into cluster" "${CLUSTER_VOLUME_HOST_PATH}"
   CLUSTER_VOLUME_HOST_PATH=${USER_INPUT}
-
-  prompt "Create Local Persistent Volume? ${YES_NO}" ${INTALL_CLUSTER_PV}
-  INTALL_CLUSTER_PV=${USER_INPUT}
-
-  if [ $(isSelected ${USER_INPUT}) -eq 1 ]; then
-    generateClusterPersistentVolumeManifest
-  fi
-
-  prompt "Install TLS Certificates for Service? ${YES_NO}" ${INSTALL_SERVICE_TLS}
-  INSTALL_SERVICE_TLS=${USER_INPUT}
-
-  if [ $(isSelected ${USER_INPUT}) -eq 1 ]; then
-    generateServiceTLSManifest
-  fi
 
   prompt "Install local image registry? ${YES_NO}" ${INSTALL_LOCAL_REGISTRY}
   INSTALL_LOCAL_REGISTRY=${USER_INPUT}
@@ -258,50 +257,41 @@ function generateServiceTLSManifest() {
   local TLS_KEY_FILE_BASE64="$(cat $TLS_KEY_FILE | base64 -w 0)"
   local TLS_CERT_FILE_BASE64="$(cat $TLS_CERT_FILE | base64 -w 0)"
 
-  CLUSTER_TLS_MANIFEST="  - description: \"TLS Certificate for $CLUSTER_NAME services\"
-    source: |
-      apiVersion: v1
-      kind: Secret
-      type: kubernetes.io/tls
-      metadata:
-        name: ${CLUSTER_NAME}-service-certs
-        namespace: kube-system
-      data:
-        tls.crt: >-
-          ${TLS_CERT_FILE_BASE64}
-        tls.key: >-
-          ${TLS_KEY_FILE_BASE64}
-    destination: /var/lib/rancher/k3s/server/manifests/${CLUSTER_NAME}-service-certs.yaml
-    nodeFilters:
-      - \"server:*\"
-"
-
+  cat <<EOF | kubectl create -f -
+    apiVersion: v1
+    kind: Secret
+    type: kubernetes.io/tls
+    metadata:
+      name: ${CLUSTER_NAME}-service-certs
+      namespace: kube-system
+    data:
+      tls.crt: >-
+        ${TLS_CERT_FILE_BASE64}
+      tls.key: >-
+        ${TLS_KEY_FILE_BASE64}
+EOF
 }
-function generateClusterPersistentVolumeManifest() {
+function createClusterPersistentVolume() {
   prompt "Persistent Volume Size (Gi)" "${CLUSTER_PV_SIZE}"
   CLUSTER_PV_SIZE=${USER_INPUT}
 
-  CLUSTER_PV_MANIFEST="  - description: \"Persistant Volumes for $CLUSTER_NAME\"
-    source: |
-      apiVersion: v1
-      kind: PersistentVolume
-      metadata:
-        name: ${CLUSTER_NAME}-pv
-        labels:
-          type: local
-      spec:
-        capacity:
-          storage: ${CLUSTER_PV_SIZE}Gi
-        accessModes:
-          - ReadWriteOnce
-        persistentVolumeReclaimPolicy: Retain
-        storageClassName: manual
-        hostPath:
-          path: /mnt/devship
-    destination: /var/lib/rancher/k3s/server/manifests/${CLUSTER_NAME}-local-pv.yaml
-    nodeFilters:
-      - \"server:*\"
-"
+  cat <<EOF | kubectl create -f -
+    apiVersion: v1
+    kind: PersistentVolume
+    metadata:
+      name: ${CLUSTER_NAME}-pv
+      labels:
+        type: local
+    spec:
+      capacity:
+        storage: ${CLUSTER_PV_SIZE}Gi
+      accessModes:
+        - ReadWriteOnce
+      persistentVolumeReclaimPolicy: Retain
+      storageClassName: manual
+      hostPath:
+        path: /mnt/devship
+EOF
 }
 
 function checkAndGenerateClusterCustomManifest() {
@@ -356,7 +346,7 @@ $LOCAL_REGISTRY_MANIFEST
 options:
   k3d:
     wait: true
-    timeout: 120s
+    timeout: 360s
     disableLoadbalancer: false
     disableImageVolume: false
     disableRollback: false
@@ -390,8 +380,6 @@ options:
       - label: CreatedBy=${USER}
         nodeFilters:
           - all
-
-${CLUSTER_CUSTOM_MANIFESTS}
 EOF
   cat <<EOF
 ${GREEN}Please check ${BLUE}${BOLD_TXT} ${SCRIPT_DIR}/k3d-${CLUSTER_NAME}.tmp.yaml${NORMAL_TXT}${NOCOLOR} ${GREEN}for customizing your cluster.
@@ -434,6 +422,20 @@ function installAddons() {
   #   installIngress
   # fi
 
+  prompt "Create Local Persistent Volume? ${YES_NO}" ${INTALL_CLUSTER_PV}
+  INTALL_CLUSTER_PV=${USER_INPUT}
+
+  if [ $(isSelected ${USER_INPUT}) -eq 1 ]; then
+    createClusterPersistentVolume
+  fi
+
+  prompt "Install TLS Certificates for Service? ${YES_NO}" ${INSTALL_SERVICE_TLS}
+  INSTALL_SERVICE_TLS=${USER_INPUT}
+
+  if [ $(isSelected ${USER_INPUT}) -eq 1 ]; then
+    generateServiceTLSManifest
+  fi
+
   prompt "Install Dashboard? ${YES_NO}" "${INSTALL_DASHBOARD}"
   if [ $(isSelected ${USER_INPUT}) -eq 1 ]; then
 
@@ -451,8 +453,10 @@ function installAddons() {
 
 function main() {
   checkDependencies
+  prompt "Cluster Name" "${CLUSTER_NAME}"
+  CLUSTER_NAME=${USER_INPUT}
+  confirmToProceed
   configValues
-  checkAndGenerateClusterCustomManifest
   generateClusterManifest
   buildCluster
   installAddons
