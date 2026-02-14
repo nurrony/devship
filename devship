@@ -88,12 +88,12 @@ function footer() {
 # Check if exist docker, k3d and kubectl
 function checkDependencies() {
   # Check Docker
-  if ! type docker >/dev/null; then
+  if ! command -v podman >/dev/null 2>&1 && ! command -v docker >/dev/null 2>&1; then
     header "Docker is required. Installing it ..."
     case "$OSTYPE" in
-    linux*) curl -L -o ${SCRIPT_DIR}/install-docker.sh "https://get.docker.com" && chmod +x ${SCRIPT_DIR}/install-docker.sh && ${SCRIPT_DIR}/install-docker.sh && sudo usermod -aG docker $USER ;;
-    darwin*) echo -e "${GREEN}Download Docker Desktop from for macOS from${NOCOLOR} ${BLUE}https://www.docker.com/products/docker-desktop${NOCOLOR}" ;;
-    win*) echo -e "${GREEN}Download Docker Desktop from for Windows from${NOCOLOR} ${BLUE}https://www.docker.com/products/docker-desktop${NOCOLOR}" ;;
+    linux*) echo -e "${GREEN}Download and install Docker/Podman${NOCOLOR}" && exist 1;;
+    darwin*) echo -e "${GREEN}Download and install Docker/Podman Desktop for macOS${NOCOLOR}" && exist 1;;
+    win*) echo -e "${GREEN}Download and install Docker/Podman Desktop for Windows${NOCOLOR}" && exit 1;;
     *) echo "unsupported: $OSTYPE" && exit 1 ;;
     esac
     rm -f ${SCRIPT_DIR}/install-docker.sh
@@ -258,7 +258,7 @@ function generateServiceTLSManifest() {
   local TLS_KEY_FILE_BASE64="$(cat $TLS_KEY_FILE | base64 -w 0)"
   local TLS_CERT_FILE_BASE64="$(cat $TLS_CERT_FILE | base64 -w 0)"
 
-  CLUSTER_TLS_MANIFEST="  - description: \" TLS Certificate for $CLUSTER_NAME services\"
+  CLUSTER_TLS_MANIFEST="  - description: \"TLS Certificate for $CLUSTER_NAME services\"
     source: |
       apiVersion: v1
       kind: Secret
@@ -281,7 +281,7 @@ function generateClusterPersistentVolumeManifest() {
   prompt "Persistent Volume Size (Gi)" "${CLUSTER_PV_SIZE}"
   CLUSTER_PV_SIZE=${USER_INPUT}
 
-  CLUSTER_PV_MANIFEST="  - description: \" Persistant Volumes for $CLUSTER_NAME\"
+  CLUSTER_PV_MANIFEST="  - description: \"Persistant Volumes for $CLUSTER_NAME\"
     source: |
       apiVersion: v1
       kind: PersistentVolume
