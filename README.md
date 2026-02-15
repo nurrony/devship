@@ -17,7 +17,7 @@ This repository contains my local Kubernetes dev environment powered by [k3d fro
  - Use existing network for cluster
  - Seamless Local Registry Integration
  - Ability to install TLS for services that ensures E2E Secure connection even for local environment
- - Use `podman` as container runtime (experimental)
+ - Use `podman` as container runtime (see)
 
  More coming soon...
 
@@ -80,20 +80,18 @@ $ kubectl get pods -l "app=nginx-test-registry"
 
 ## Using Ingress with TLS
 
-The script prompt you to setup [Nginx Ingress Controller][nginx-ingress] using [Bitnami Nginx Ingress Helm Chart][bitnami-nginx-ingress-chart] with the `TLS` support.
+The script prompt you to setup [traefik Ingress Controller][traefik] using [Traefik Helm Chart][traefik-helm-chart] with the `TLS` support.
 
-If you did not setup ingress during creation of the cluster, you can install it following the steps described in [Setup Nginx Ingress Controller](/examples/ingress/README.md)
+If you did not setup ingress during creation of the cluster, you can install it following the steps described in [Setup Traefik Ingress Controller](/examples/ingress/README.md)
 
 ## Todo
 - [ ] Add Docker Registry UI
 - [ ] Enable Traefik Dashboard
 - [ ] Add [Kube-VIP](https://kube-vip.io/) support
 
-
-[nginx-ingress]: https://github.com/kubernetes/ingress-nginx
-[bitnami-nginx-ingress-chart]: https://github.com/bitnami/charts/tree/main/bitnami/nginx-ingress-controller/#nginx-ingress-controller-packaged-by-bitnami
 [traefik]: https://traefik.io/
 [k3d-site]: https://k3d.io
 [helm-site]: https://helm.sh/docs/intro/install/
 [k8s-cli]: https://kubernetes.io/docs/tasks/tools/
+[traefik-helm-chart]: https://traefik.github.io/charts
 [docker-desktop]: https://www.docker.com/products/docker-desktop/
