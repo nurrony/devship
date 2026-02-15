@@ -38,6 +38,7 @@ extraObjects:
     spec:
       basicAuth:
         secret: traefik-dashboard-auth-secret
+
   - apiVersion: traefik.io/v1alpha1
     kind: Middleware
     metadata:
