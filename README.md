@@ -82,7 +82,7 @@ $ kubectl get pods -l "app=nginx-test-registry"
 
 The script prompt you to setup [traefik Ingress Controller][traefik] using [Traefik Helm Chart][traefik-helm-chart] with the `TLS` support.
 
-If you did not setup ingress during creation of the cluster, you can install it following the steps described in [Setup Traefik Ingress Controller](/examples/ingress/README.md)
+If you did not setup ingress during creation of the cluster, you can install it following the steps described in [Setup Nginx Ingress Controller](/examples/ingress/README.md) using [Bitnami Nginx Ingress Helm Chart][bitnami-nginx-ingress-chart]
 
 ## Todo
 - [ ] Add Docker Registry UI
@@ -95,3 +95,4 @@ If you did not setup ingress during creation of the cluster, you can install it 
 [k8s-cli]: https://kubernetes.io/docs/tasks/tools/
 [traefik-helm-chart]: https://traefik.github.io/charts
 [docker-desktop]: https://www.docker.com/products/docker-desktop/
+[bitnami-nginx-ingress-chart]: https://github.com/bitnami/charts/tree/main/bitnami/nginx-ingress-controller/#nginx-ingress-controller-packaged-by-bitnami
