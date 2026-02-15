@@ -28,7 +28,7 @@ While creating cluster the script search for `{CLUSTER_DOMAIN}.key` and `{CLUSTE
 Run the following command to start the voyage. The script will guide you to setup your cluster
 
 ```bash
-$ ./devship
+./devship
 ```
 
 ## Using local registry
@@ -36,16 +36,16 @@ To use the local registry, please follow the instructions below
 
 1. Check if registry contrainer is up and running
 ```bash
-$ docker ps | grep "registry"
+docker ps | grep "registry"
 ```
 2. Pull `nginx:alpine` image
 ```bash
-$ docker pull nginx:alpine
+docker pull nginx:alpine
 ```
 3. Tag `nginx:alpine` as follows and push it
 ```bash
- $ docker tag nginx:alpine <registry-container-name>:5000/nginx:alpine
- $ docker push <registry-container-name>:5000/nginx:alpine
+docker tag nginx:alpine <registry-container-name>:5000/nginx:alpine
+docker push <registry-container-name>:5000/nginx:alpine
 ```
 4. Deploy a `Pod` referencing the image pushed into the local registry in the step above as follows
 ```bash
@@ -75,7 +75,14 @@ EOF
 ```
 6. Check if the pod is running fine or not
 ```sh
-$ kubectl get pods -l "app=nginx-test-registry"
+kubectl get pods -l "app=nginx-test-registry"
+```
+
+## Authenticate HeadLamp Kubernetes Dashboard
+If you install [HeadLamp Dashboard][headlamp] (A replacement of Legacy Kubernetes Dashboard). Follow these instructions to access the dashboard
+```sh
+kubectl apply -f extras/headlamp.yaml
+kubectl create token headlamp-admin --namespace kube-system
 ```
 
 ## Using Ingress with TLS
@@ -89,8 +96,9 @@ If you did not setup ingress during creation of the cluster, you can install it 
 - [ ] Enable Traefik Dashboard
 - [ ] Add [Kube-VIP](https://kube-vip.io/) support
 
-[traefik]: https://traefik.io/
 [k3d-site]: https://k3d.io
+[traefik]: https://traefik.io/
+[headlamp]: https://headlamp.dev/
 [helm-site]: https://helm.sh/docs/intro/install/
 [k8s-cli]: https://kubernetes.io/docs/tasks/tools/
 [traefik-helm-chart]: https://traefik.github.io/charts
