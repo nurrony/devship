@@ -18,10 +18,8 @@ SERVERS=1
 AGENTS=1
 
 # Addons
-K3S_TRAEFIK_ARGS=""
-DISABLE_BUILITIN_TRAEFIK=Yes
 INSTALL_LOCAL_REGISTRY=Yes
-INSTALL_INGRESS=Yes
+INSTALL_TRAEFIK_INGRESS=Yes
 INSTALL_DASHBOARD=No
 INSTALL_PROMETHEUS=No
 
@@ -183,15 +181,6 @@ function configValues() {
   prompt "Custom docker network name? " ${CLUSTER_DOCKER_NETWORK}
   CLUSTER_DOCKER_NETWORK=${USER_INPUT}
 
-  prompt "Disable Buitin Traefik? " ${DISABLE_BUILITIN_TRAEFIK}
-  if [ $(isSelected ${USER_INPUT}) -eq 1 ]; then
-    K3S_TRAEFIK_ARGS="
-      - arg: \"--disable=traefik\" # disable traefik
-        nodeFilters:
-          - server:*"
-  fi
-
-
   if [ "${USER_INPUT}" != "k3d-${CLUSTER_NAME}" ]; then
     CLUSTER_DOCKER_NETWORK_MANIFEST="network: ${CLUSTER_DOCKER_NETWORK}"
   fi
@@ -352,7 +341,9 @@ options:
     disableRollback: false
   k3s:
     extraArgs:
-      ${K3S_TRAEFIK_ARGS}
+      - arg: "--disable=traefik"
+        nodeFilters:
+          - server:*
       - arg: "--tls-san=*.${CLUSTER_DOMAIN}"
         nodeFilters:
           - server:*
@@ -497,7 +488,60 @@ function installHeadlampDashboard() {
   helm repo update
   helm install my-headlamp headlamp/headlamp --namespace kube-system
 
-  echo -e "\n${BOLD_TXT}${GREEN}Check ${PINK}extras/headlamp${NOCOLOR} ${GREEN}directory to setup ServiceAccount and ClusterRoleBinding \n${NORMAL_TXT}";
+  echo -e "${GREEN}\nSetting up ServiceAccount, Role and ClusterRoleBinding as Cluster Admin for Headlamp Dashboard...${NOCOLOR}"
+
+  # create ServiceAccount for headlamp
+  cat<<EOF | kubectl apply -f -
+    apiVersion: v1
+    kind: ServiceAccount
+    metadata:
+      name: headlamp-admin
+      namespace: kube-system
+EOF
+
+  # create ClusterRoleBinding for headlamp
+  cat<<EOF | kubectl apply -f -
+    apiVersion: rbac.authorization.k8s.io/v1
+    kind: ClusterRoleBinding
+    metadata:
+      name: headlamp-admin
+    roleRef:
+      apiGroup: rbac.authorization.k8s.io
+      kind: ClusterRole
+      name: cluster-admin
+    subjects:
+    - kind: ServiceAccount
+      name: headlamp-admin
+      namespace: kube-system
+EOF
+
+  # create ingress route if traefik has installed
+  if [ $(isSelected ${INSTALL_TRAEFIK_INGRESS}) -eq 1 ]; then
+    cat<<EOF | kubectl apply -f -
+      apiVersion: traefik.io/v1alpha1
+      kind: IngressRoute
+      metadata:
+        name: my-headlamp-ingress
+        namespace: kube-system
+      spec:
+        entryPoints:
+          - web
+          - websecure
+        routes:
+          - match: Host(\`headlamp.${CLUSTER_DOMAIN}\`)
+            kind: Rule
+            middlewares:
+              - name: traefik-redirect-https
+            services:
+              - name: my-headlamp
+                port: 80
+        tls: {} # cluster comes with defaultTlsStore
+EOF
+
+  echo -e "\n${BOLD_TXT}${GREEN}Please Open https://headlamp.${CLUSTER_DOMAIN} to browse the dashboard${NOCOLOR}${NOCOLOR}";
+  fi
+
+  echo -e "\n${BOLD_TXT}${GREEN}Please run 'kubectl create token headlamp-admin --namespace kube-system' to generate id-token${NORMAL_TXT}${NOCOLOR}";
 
 }
 
@@ -505,7 +549,7 @@ function installHeadlampDashboard() {
 function installAddons() {
   header "Installing Adons..."
 
-  prompt "Install Traefik Ingress from Helm? ${YES_NO}" "${INSTALL_INGRESS}"
+  prompt "Install Traefik Ingress from Helm? ${YES_NO}" "${INSTALL_TRAEFIK_INGRESS}"
   if [ $(isSelected ${USER_INPUT}) -eq 1 ]; then
     installTraefikIngress
   fi
