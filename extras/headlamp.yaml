@@ -29,7 +29,7 @@ spec:
     - web
     - websecure
   routes:
-    - match: Host(`headlamp.nurrony.localhost`)
+    - match: Host(`headlamp.<your-cluster-fqdn>`)
       kind: Rule
       middlewares:
         - name: traefik-redirect-https
