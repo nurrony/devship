@@ -78,13 +78,16 @@ EOF
 kubectl get pods -l "app=nginx-test-registry"
 ```
 
-## Authenticate HeadLamp Kubernetes Dashboard
-If you install [HeadLamp Dashboard][headlamp] (A replacement of Legacy Kubernetes Dashboard). Follow these instructions to access the dashboard
+## Install and access HeadLamp Kubernetes Dashboard
+The script comes with ready to go installation of [HeadLamp Kubernetes Dashboard][headlamp] (A replacement of Legacy Kubernetes Dashboard) during the cluter setup process. If you do not install Headlamp during cluster setup then, follow these instructions to install and access the dashboard
 ```sh
+helm repo add headlamp https://kubernetes-sigs.github.io/headlamp/
+helm repo update
+helm install my-headlamp headlamp/headlamp --namespace kube-system
 kubectl apply -f extras/headlamp.yaml
 kubectl create token headlamp-admin --namespace kube-system
 ```
-> 📝 **NOTE: Please do not forget to replce `headlamp.<your-cluster-fqdn>` with actual cluster FQDN before executing the commands above**
+> 📝 **NOTE: Please do not forget to replace `headlamp.<your-cluster-fqdn>` with actual cluster FQDN before executing the commands above**
 
 ## Using Ingress with TLS
 
