@@ -84,6 +84,7 @@ If you install [HeadLamp Dashboard][headlamp] (A replacement of Legacy Kubernete
 kubectl apply -f extras/headlamp.yaml
 kubectl create token headlamp-admin --namespace kube-system
 ```
+> 📝 **NOTE: Please do not forget to replce `headlamp.<your-cluster-fqdn>` with actual cluster FQDN before executing the commands above**
 
 ## Using Ingress with TLS
 
