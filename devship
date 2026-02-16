@@ -453,8 +453,9 @@ extraObjects:
         permanent: true
 EOF
 
-  echo -e "\n${BOLD_TXT}${PINK}Traefik Admin/Password: admin/${CLUSTER_NAME}${NOCOLOR}${NORMAL_TXT}\n";
-  echo -e "${BOLD_TXT}${PINK}Use 'traefik-redirect-https' middleware for HTTPS Redirection.${NOCOLOR}${NORMAL_TXT}\n";
+  echo -e "${BOLD_TXT}${YELLOW}Traefik Dashboard: ${BLUE}https://traefik.${CLUSTER_DOMAIN}/${NOCOLOR}${NOCOLOR}${NORMAL_TXT}\n";
+  echo -e "\n${BOLD_TXT}${YELLOW}Traefik Admin/Password: admin/${CLUSTER_NAME}${NOCOLOR}${NORMAL_TXT}\n";
+  echo -e "${BOLD_TXT}${YELLOW}Traefik HTTPS Redirection Middleware: 'traefik-redirect-https'${NOCOLOR}${NORMAL_TXT}\n";
 }
 
 function createExtraK8sComponents() {
@@ -538,10 +539,10 @@ EOF
         tls: {} # cluster comes with defaultTlsStore
 EOF
 
-  echo -e "\n${BOLD_TXT}${GREEN}Please Open https://headlamp.${CLUSTER_DOMAIN} to browse the dashboard${NOCOLOR}${NOCOLOR}";
+  echo -e "\n${YELLOW}HeadLamp Dashboard: ${BLUE}https://headlamp.${CLUSTER_DOMAIN}/${NOCOLOR}";
   fi
 
-  echo -e "\n${BOLD_TXT}${GREEN}Please run 'kubectl create token headlamp-admin --namespace kube-system' to generate id-token${NORMAL_TXT}${NOCOLOR}";
+  echo -e "\n${BOLD_TXT}${YELLOW}Please execute 'kubectl create token headlamp-admin --namespace kube-system' to generate id-token${NORMAL_TXT}${NOCOLOR}";
 
 }
 
