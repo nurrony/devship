@@ -96,8 +96,8 @@ The script prompt you to setup [traefik Ingress Controller][traefik] using [Trae
 If you did not setup ingress during creation of the cluster, you can install it following the steps described in [Setup Nginx Ingress Controller](/examples/ingress/README.md) using [Bitnami Nginx Ingress Helm Chart][bitnami-nginx-ingress-chart]
 
 ## Todo
+- [x] Enable Traefik Dashboard
 - [ ] Add Docker Registry UI
-- [ ] Enable Traefik Dashboard
 - [ ] Add [Kube-VIP](https://kube-vip.io/) support
 
 [k3d-site]: https://k3d.io
