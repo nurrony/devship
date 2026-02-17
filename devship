@@ -542,7 +542,7 @@ EOF
   echo -e "\n${YELLOW}HeadLamp Dashboard: ${BLUE}https://headlamp.${CLUSTER_DOMAIN}/${NOCOLOR}";
   fi
 
-  echo -e "\n${BOLD_TXT}${YELLOW}Please execute 'kubectl create token headlamp-admin --namespace kube-system' to generate id-token${NORMAL_TXT}${NOCOLOR}";
+  echo -e "${YELLOW}Please execute ${BLUE}kubectl create token headlamp-admin --namespace kube-system${NOCOLOR} to generate id-token.${NOCOLOR}";
 
 }
 
