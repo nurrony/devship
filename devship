@@ -416,7 +416,7 @@ function installTraefikIngress() {
 ingressRoute:
   dashboard:
     enabled: true
-    matchRule: Host(\`${CLUSTER_DOMAIN}\`)
+    matchRule: Host(\`traefik.${CLUSTER_DOMAIN}\`)
     entryPoints: ["websecure"]
     middlewares:
       - name: traefik-dashboard-auth
