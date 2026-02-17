@@ -453,9 +453,9 @@ extraObjects:
         permanent: true
 EOF
 
-  echo -e "\n${YELLOW}Traefik Dashboard: ${BLUE}https://traefik.${CLUSTER_DOMAIN}/${NOCOLOR}${NOCOLOR}${NORMAL_TXT}";
-  echo -e "${YELLOW}Traefik Admin/Password: admin/${CLUSTER_NAME}${NOCOLOR}${NORMAL_TXT}";
-  echo -e "${YELLOW}Traefik HTTPS Redirection Middleware: ${BLUE}traefik-redirect-https${NOCOLOR}${NOCOLOR}${NORMAL_TXT}\n";
+  echo -e "\n${YELLOW}Traefik Dashboard: ${BLUE}https://traefik.${CLUSTER_DOMAIN}/${NOCOLOR}${NOCOLOR}";
+  echo -e "${YELLOW}Traefik Admin/Password: admin/${CLUSTER_NAME}${NOCOLOR}";
+  echo -e "${YELLOW}Traefik HTTPS Redirection Middleware: ${BLUE}traefik-redirect-https${NOCOLOR}${NOCOLOR}\n";
 }
 
 function createExtraK8sComponents() {
