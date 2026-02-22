@@ -446,16 +446,16 @@ extraObjects:
   - apiVersion: traefik.io/v1alpha1
     kind: Middleware
     metadata:
-      name: traefik-redirect-https
+      name: traefik-redirect-https-global
     spec:
       redirectScheme:
         scheme: https
         permanent: true
 EOF
 
-  echo -e "\n${YELLOW}Traefik Dashboard: ${BLUE}https://traefik.${CLUSTER_DOMAIN}/${NOCOLOR}${NOCOLOR}";
-  echo -e "${YELLOW}Traefik Admin/Password: admin/${CLUSTER_NAME}${NOCOLOR}";
-  echo -e "${YELLOW}Traefik HTTPS Redirection Middleware: ${BLUE}traefik-redirect-https${NOCOLOR}${NOCOLOR}\n";
+  echo -e "\n${YELLOW}Traefik Admin/Password: ${BLUE}admin/${CLUSTER_NAME}${NOCOLOR}${NOCOLOR}";
+  echo -e "${YELLOW}Traefik Dashboard: ${BLUE}https://traefik.${CLUSTER_DOMAIN}/${NOCOLOR}${NOCOLOR}";
+  echo -e "${YELLOW}Traefik HTTPS Redirection Middleware: ${BLUE}traefik-redirect-https-global${NOCOLOR}${NOCOLOR}\n";
 }
 
 function createExtraK8sComponents() {
@@ -532,7 +532,7 @@ EOF
           - match: Host(\`headlamp.${CLUSTER_DOMAIN}\`)
             kind: Rule
             middlewares:
-              - name: traefik-redirect-https
+              - name: traefik-redirect-https-global
             services:
               - name: my-headlamp
                 port: 80
